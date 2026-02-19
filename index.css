@@ -1,0 +1,636 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Appli Brand Palette */
+  --color-primary: #ED1164;
+  /* Appli Pink */
+  --color-primary-dark: #C40E53;
+  /* Darker shade for hover */
+  --color-secondary: #1D1D1F;
+  /* Appli Dark Gray / Black */
+  --color-accent: #FF4D8D;
+  /* Lighter Pink */
+
+  --bg-page: #FFFFFF;
+  /* White */
+  --bg-card: #FFFFFF;
+
+  --text-main: #0D0D0D;
+  /* Dark Charcoal */
+  --text-muted: #64748B;
+  /* Slate Gray */
+  --text-light: #F1F1F1;
+  /* Off-white */
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utilities */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 17, 100, 0.2);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: #f5f3ff;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Range Slider - Black variant */
+input[type='range'].slider-black {
+  /* track fill is set via inline style (dynamic gradient) */
+}
+
+input[type='range'].slider-black::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1D1D1F;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  border: 3px solid white;
+  transition: transform 0.15s ease;
+}
+
+input[type='range'].slider-black::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type='range'].slider-black::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1D1D1F;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  border: 3px solid white;
+}
+
+/* =========================================
+   PDF EXPORT MODE (Rigid Layout for html2canvas)
+   ========================================= */
+
+/* Main Container: Forces a fixed width closer to A4 native (794px at 96dpi) */
+.pdf-export-mode {
+  width: 700px !important;
+  min-width: 700px !important;
+  max-width: 700px !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  padding: 30px !important;
+  /* Reduced padding */
+  margin: 0 auto !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  /* Ensure background colors render */
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* CRITICAL: Disable animations/transitions for instant snapshots */
+.pdf-export-mode * {
+  animation: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* 1. Header Layout */
+.pdf-export-mode .header-flex {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 30px !important;
+  margin-bottom: 30px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding-bottom: 20px !important;
+}
+
+/* 2. Drivers Grid (Horizontal Row) */
+.pdf-export-mode .drivers-grid {
+  display: flex !important;
+  width: 100% !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin-bottom: 30px !important;
+  background-color: #f8fafc !important;
+}
+
+.pdf-export-mode .drivers-grid>div {
+  flex: 1 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding: 15px !important;
+  text-align: center !important;
+}
+
+.pdf-export-mode .drivers-grid>div:last-child {
+  border-right: none !important;
+}
+
+/* 3. Vision Board Grid - Vertical Stack */
+.pdf-export-mode .vision-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  margin-bottom: 30px !important;
+}
+
+/* Force Full Width */
+.pdf-export-mode .vision-grid>div:first-child {
+  width: 100% !important;
+  flex: none !important;
+}
+
+.pdf-export-mode .vision-grid>div:last-child {
+  width: 100% !important;
+  flex: none !important;
+}
+
+/* 4. MAIN CONTENT COLUMNS - VERTICAL STACK FOR PDF */
+.pdf-export-mode .content-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 30px !important;
+}
+
+/* Skill Chart (Full Width) */
+.pdf-export-mode .skill-section {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-right: 0 !important;
+  page-break-inside: avoid !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #fff !important;
+  padding: 20px !important;
+}
+
+.pdf-export-mode .chart-container {
+  height: 300px !important;
+  /* Slightly taller for full width */
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* Recommendations (Full Width) */
+.pdf-export-mode .rec-section {
+  width: 100% !important;
+  flex: none !important;
+}
+
+/* Recommendation Cards - Prevent Page Breaks */
+.pdf-export-mode .rec-card {
+  page-break-inside: avoid !important;
+  margin-bottom: 15px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  padding: 20px !important;
+}
+
+/* 5. Footer & Stats - Vertical Stack */
+.pdf-export-mode .pathways-grid,
+.pdf-export-mode .stats-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 30px !important;
+  page-break-inside: avoid !important;
+}
+
+.pdf-export-mode .pathways-grid>div,
+.pdf-export-mode .stats-grid>div {
+  width: 100% !important;
+  flex: none !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+}
+
+/* 6. Color Corrections for Print */
+.pdf-export-mode [class*="bg-"] {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure dark backgrounds become white/bordered for ink saving */
+.pdf-export-mode .bg-slate-900,
+.pdf-export-mode .bg-slate-800 {
+  background-color: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Text Color Corrections */
+.pdf-export-mode h1,
+.pdf-export-mode h2,
+.pdf-export-mode h3 {
+  color: #0f172a !important;
+}
+
+.pdf-export-mode p,
+.pdf-export-mode span {
+  color: #334155 !important;
+}
+
+.pdf-export-mode .text-white {
+  color: #0f172a !important;
+}
+
+/* 7. Chart Colors Override */
+.pdf-export-mode .recharts-polar-grid-angle line,
+.pdf-export-mode .recharts-polar-grid-concentric path {
+  stroke: #cbd5e1 !important;
+}
+
+.pdf-export-mode .recharts-text {
+  fill: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+}
+
+.pdf-export-mode .recharts-radar-polygon {
+  stroke: #ED1164 !important;
+  /* Brand Pink */
+  fill: #ED1164 !important;
+  fill-opacity: 0.1 !important;
+}
+
+/* Hide interactive elements */
+/* Hide interactive elements */
+.pdf-export-mode .no-print,
+.pdf-export-mode .no-print-pdf {
+  display: none !important;
+}
+
+@media print {
+
+  /* Hide all main content/UI by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Hide the screen results container specifically */
+  #results-container,
+  nav,
+  footer,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Show only the PDF Report Template and its children */
+  #print-wrapper,
+  #print-wrapper * {
+    visibility: visible;
+  }
+
+  /* Position the template at top left */
+  #print-wrapper {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    background-color: white;
+  }
+
+  /* Reset container to allow print flow */
+  #pdf-report-target {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Allow background graphics */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: white !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
+/* =========================================
+   PDF GENERATION FIXES (HTML2CANVAS COMPATIBILITY)
+   ========================================= */
+/* 
+   html2canvas does not support 'oklch' colors (used by Tailwind v4).
+   We must override all color utility classes used in the PDF template 
+   with explicit HEX values to prevent crashing.
+*/
+
+/* ROOT & DESCENDANT OVERRIDES (Chained selector for root, space for descendants) */
+#pdf-report-target.text-slate-900,
+#pdf-report-target .text-slate-900 {
+  color: #0f172a !important;
+}
+
+#pdf-report-target.text-slate-800,
+#pdf-report-target .text-slate-800 {
+  color: #1e293b !important;
+}
+
+#pdf-report-target.text-slate-700,
+#pdf-report-target .text-slate-700 {
+  color: #334155 !important;
+}
+
+#pdf-report-target.text-slate-600,
+#pdf-report-target .text-slate-600 {
+  color: #475569 !important;
+}
+
+#pdf-report-target.text-slate-500,
+#pdf-report-target .text-slate-500 {
+  color: #64748b !important;
+}
+
+#pdf-report-target.text-slate-400,
+#pdf-report-target .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+#pdf-report-target.text-slate-300,
+#pdf-report-target .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+#pdf-report-target.bg-slate-50,
+#pdf-report-target .bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+#pdf-report-target.bg-slate-100,
+#pdf-report-target .bg-slate-100 {
+  background-color: #f1f5f9 !important;
+}
+
+#pdf-report-target.bg-slate-200,
+#pdf-report-target .bg-slate-200 {
+  background-color: #e2e8f0 !important;
+}
+
+#pdf-report-target.bg-slate-900,
+#pdf-report-target .bg-slate-900 {
+  background-color: #0f172a !important;
+}
+
+#pdf-report-target.border-slate-100,
+#pdf-report-target .border-slate-100 {
+  border-color: #f1f5f9 !important;
+}
+
+#pdf-report-target.border-slate-200,
+#pdf-report-target .border-slate-200 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Pink Palette */
+#pdf-report-target.text-pink-600,
+#pdf-report-target .text-pink-600 {
+  color: #db2777 !important;
+}
+
+#pdf-report-target.text-pink-500,
+#pdf-report-target .text-pink-500 {
+  color: #ec4899 !important;
+}
+
+#pdf-report-target.text-pink-400,
+#pdf-report-target .text-pink-400 {
+  color: #f472b6 !important;
+}
+
+#pdf-report-target.bg-pink-50,
+#pdf-report-target .bg-pink-50 {
+  background-color: #fdf2f8 !important;
+}
+
+#pdf-report-target.bg-pink-100,
+#pdf-report-target .bg-pink-100 {
+  background-color: #fce7f3 !important;
+}
+
+#pdf-report-target.bg-pink-200,
+#pdf-report-target .bg-pink-200 {
+  background-color: #fbcfe8 !important;
+}
+
+#pdf-report-target.bg-pink-500,
+#pdf-report-target .bg-pink-500 {
+  background-color: #ec4899 !important;
+}
+
+#pdf-report-target.border-pink-100,
+#pdf-report-target .border-pink-100 {
+  border-color: #fce7f3 !important;
+}
+
+#pdf-report-target.border-pink-200,
+#pdf-report-target .border-pink-200 {
+  border-color: #fbcfe8 !important;
+}
+
+/* Blue/Indigo Palette */
+#pdf-report-target.text-blue-600,
+#pdf-report-target .text-blue-600 {
+  color: #2563eb !important;
+}
+
+#pdf-report-target.text-blue-700,
+#pdf-report-target .text-blue-700 {
+  color: #1d4ed8 !important;
+}
+
+#pdf-report-target.bg-blue-50,
+#pdf-report-target .bg-blue-50 {
+  background-color: #eff6ff !important;
+}
+
+#pdf-report-target.bg-blue-100,
+#pdf-report-target .bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+
+#pdf-report-target.bg-blue-500,
+#pdf-report-target .bg-blue-500 {
+  background-color: #3b82f6 !important;
+}
+
+#pdf-report-target.border-blue-200,
+#pdf-report-target .border-blue-200 {
+  border-color: #bfdbfe !important;
+}
+
+#pdf-report-target.border-blue-300,
+#pdf-report-target .border-blue-300 {
+  border-color: #93c5fd !important;
+}
+
+#pdf-report-target.bg-indigo-50,
+#pdf-report-target .bg-indigo-50 {
+  background-color: #eef2ff !important;
+}
+
+#pdf-report-target.bg-white,
+#pdf-report-target .bg-white {
+  background-color: #ffffff !important;
+}
+
+#pdf-report-target.text-white,
+#pdf-report-target .text-white {
+  color: #ffffff !important;
+}
+
+/* CRITICAL: Disable complex CSS features that use oklch or confuse html2canvas */
+#pdf-report-target * {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* NOTE: Blanket SVG override removed — it was stripping Recharts inline pink styles from the radar chart */
+
+/* EXCEPTION: Preserve explicit pink color on Recharts radar chart polygon */
+#pdf-report-target .recharts-radar-polygon,
+#pdf-report-target path.recharts-radar-polygon {
+  stroke: #ED1164 !important;
+  fill: #ED1164 !important;
+  fill-opacity: 0.4 !important;
+}
+
+/* EXCEPTION: Preserve polar grid lines */
+#pdf-report-target .recharts-polar-grid-angle line,
+#pdf-report-target .recharts-polar-grid-concentric path {
+  stroke: #cbd5e1 !important;
+  fill: none !important;
+}
+
+@media print {
+
+  /* Force pink on radar chart in print */
+  .recharts-radar-polygon,
+  path.recharts-radar-polygon {
+    stroke: #ED1164 !important;
+    fill: #ED1164 !important;
+    fill-opacity: 0.4 !important;
+  }
+
+  .recharts-polar-grid-angle line,
+  .recharts-polar-grid-concentric path {
+    stroke: #cbd5e1 !important;
+    fill: none !important;
+  }
+}
+
+/* Revert specific cases where we want transparency */
+#pdf-report-target [fill="none"] {
+  fill: none !important;
+}
+
+#pdf-report-target [stroke="none"] {
+  stroke: none !important;
+}
+
+/* Disable gradients (which use oklch stops) but keep explicit background images if needed */
+#pdf-report-target [class*="bg-gradient-"] {
+  background-image: none !important;
+  background-color: #ffffff !important;
+  /* Fallback */
+}
+
+/* Specific Gradient Replacements */
+#pdf-report-target.from-pink-50,
+#pdf-report-target .from-pink-50 {
+  background-color: #fdf2f8 !important;
+}
+
+#pdf-report-target.from-blue-50,
+#pdf-report-target .from-blue-50 {
+  background-color: #eff6ff !important;
+}
+
+/* Hide decorative blurs */
+#pdf-report-target [class*="blur-"] {
+  display: none !important;
+}
