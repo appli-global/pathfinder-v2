@@ -205,12 +205,12 @@ export const ResultsPage: React.FC = () => {
             try {
                 const parsed = JSON.parse(savedResult);
                 // Strict validation: Check for key fields. If missing, treat as invalid.
-                if (parsed.data && parsed.data.archetype && parsed.data.recommendations) {
+                if (parsed.data && parsed.data.archetype && parsed.data.recommendations && parsed.data.parentLetterData) {
                     setAnalysisResult(parsed.data);
                     setLoading(false);
                     return; // We have results, no need to re-run AI
                 } else {
-                    console.warn("Found saved result but it seems incomplete. Re-running.");
+                    console.warn("Found saved result but it seems incomplete or missing new parent letter fields. Re-running.");
                     localStorage.removeItem('pathfinder_analysis_result');
                 }
             } catch (e) {

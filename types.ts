@@ -85,6 +85,18 @@ export interface AnalysisResult {
     overallInsight: string;
   };
   audioScript: string;
+  parentLetterData?: {
+    salutation: string;
+    paragraph1: string;
+    paragraph2: string;
+    paragraph3: string;
+    paragraph4: string;
+    paragraph5: string;
+    paragraph6: string;
+    paragraph7: string;
+    paragraph8: string;
+    signOff: string;
+  };
 }
 
 export type AnswerMap = Record<number, string>;

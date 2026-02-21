@@ -152,8 +152,8 @@ export const QUESTIONS_12TH: Question[] = [
     text: "Final Step: Generate Your Report",
     subtext: "Click below to analyze your profile and generate your personalized career report.",
     inputType: 'payment',
-    // Live Payment Link (Razorpay)
-    paymentLink: "https://pages.razorpay.com/pl_SGHUhlVVhEsc1J/view",
+    // Live Payment Link (Razorpay) - temporarily removed
+    // paymentLink: "https://pages.razorpay.com/pl_SGHUhlVVhEsc1J/view",
     options: []
   }
 ];
@@ -199,10 +199,10 @@ export const QUESTIONS_UG: Question[] = [
   {
     id: 13,
     text: "Final Step: Unlock Your Report",
-    subtext: "Proceed to payment to generate your personalized career analysis.",
+    subtext: "Click below to generate your personalized career analysis.",
     inputType: 'payment',
-    // Live Payment Link (Razorpay)
-    paymentLink: "https://pages.razorpay.com/pl_SGHUhlVVhEsc1J/view",
+    // Live Payment Link (Razorpay) - temporarily removed
+    // paymentLink: "https://pages.razorpay.com/pl_SGHUhlVVhEsc1J/view",
     options: []
   }
 ];

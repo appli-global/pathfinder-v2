@@ -170,8 +170,24 @@ const FINAL_RESPONSE_SCHEMA: Schema = {
       required: ["headline", "topCareers", "commonInterests"],
     },
     audioScript: { type: Type.STRING, description: "A 30-45 second conversational script. Speak like a mentor, not a machine. Use contractions ('You're', 'We've'), warm tone, and short sentences. No 'Based on your inputs'. Just jump in." },
+    parentLetterData: {
+      type: Type.OBJECT,
+      properties: {
+        salutation: { type: Type.STRING },
+        paragraph1: { type: Type.STRING },
+        paragraph2: { type: Type.STRING },
+        paragraph3: { type: Type.STRING },
+        paragraph4: { type: Type.STRING },
+        paragraph5: { type: Type.STRING },
+        paragraph6: { type: Type.STRING },
+        paragraph7: { type: Type.STRING },
+        paragraph8: { type: Type.STRING },
+        signOff: { type: Type.STRING },
+      },
+      required: ["salutation", "paragraph1", "paragraph2", "paragraph3", "paragraph4", "paragraph5", "paragraph6", "paragraph7", "paragraph8", "signOff"],
+    },
   },
-  required: ["archetype", "visionBoard", "skillSignature", "recommendations", "alternativePathways", "communityStats", "audioScript"],
+  required: ["archetype", "visionBoard", "skillSignature", "recommendations", "alternativePathways", "communityStats", "audioScript", "parentLetterData"],
 };
 
 
@@ -355,7 +371,8 @@ const generateFinalReport = async (
   formattedAnswers: string,
   isUG: boolean,
   degreePreference?: string,
-  subjectPreference?: string
+  subjectPreference?: string,
+  userName?: string
 ): Promise<AnalysisResult> => {
   // Pass top 150 candidates to LLM to ensure broad consideration
   const coursesContext = topCourses.slice(0, 150).map(c =>
@@ -369,6 +386,8 @@ const generateFinalReport = async (
         NOTE: The user's favorite subject is "${subjectPreference}".
         CRITICAL CONSTRAINT:
         1. You MUST select exactly 1 recommendation that is directly related to "${subjectPreference}".` : "";
+
+  const studentName = userName && userName.trim() !== "" ? userName : "the student";
 
   const prompt = `
         TASK: Select the final 3 Recommendations and 3 Alternative Pathways from the provided CANDIDATE LIST below.
@@ -408,6 +427,17 @@ const generateFinalReport = async (
          2. **The Why**: Connect 2 specific drivers to the course.
          3. **The Vision**: End with their future self.
        - **Example**: "Hey there, [Archetype]. valid. It's clear you love [Driver A] and [Driver B], which is exactly why [Course Name] is such a strong fit. Imagine yourself [Vision Highlight]. That's the future waiting for you. Let's make it happen."
+    7. **Parent Letter**: Write a powerful 8-paragraph letter directed to the student's parents. Use the EXACT structure and wording below, replacing the bracketed information with the user's specific personalized details (name, archetype, recommendations, etc.). Use appropriate pronouns (he/she/they) and terms (son/daughter/child) based on the user's name if obvious, otherwise default to 'they/child'.
+       - **Salutation**: "Dear ${studentName}'s parents,"
+       - **Paragraph 1**: "We hope you are doing well."
+       - **Paragraph 2**: "After carefully reviewing ${studentName}'s assessment, we wanted to personally share what [his/her/their] results truly mean, not just in numbers, but in possibility."
+       - **Paragraph 3**: "Your [son/daughter/child] has been identified as a "[Archetype]," a rare profile marked by [2-3 strengths like 'deep analytical thinking, pattern recognition...']. With a remarkable [90-99] percent alignment score, [his/her/their] strengths clearly point toward a future shaped by [3 descriptive keywords]."
+       - **Paragraph 4**: "What stands out most is not only [his/her/their] natural ability with [specific driver from answers], but [his/her/their] genuine curiosity for [another specific driver]. Students like ${studentName} are often the ones who [Vision impact]."
+       - **Paragraph 5**: "They do not simply adapt to the future. They help shape it."
+       - **Paragraph 6**: "[His/Her/Their] profile strongly aligns with forward looking fields such as [Top 3 Recommendations]. These domains are not temporary trends. They form the foundation of tomorrow's global economy and offer strong career stability along with intellectual growth."
+       - **Paragraph 7**: "At Appli, we work closely with students and families to turn this clarity into action. Beyond assessments, Appli supports students through the entire college application journey, helping them identify the right programs, evaluate the right institutions, and submit applications with confidence and structure. Our goal is to ensure that talent like ${studentName}'s finds the right academic environment to thrive."
+       - **Paragraph 8**: "Most importantly, this path builds on who [he/she/they] already [is/are]. With your continued encouragement and the right academic guidance, [he/she/they] [is/are] well positioned for a future that is both meaningful and secure.\n\nThe future ahead of [him/her/them] is not uncertain. It is full of promise."
+       - **SignOff**: "Warm regards,\nAppli\nwww.appli.global"
   `;
 
   const response = await ai.models.generateContent({
@@ -678,7 +708,7 @@ export const analyzeCareerPath = async (
 
     // 3. Final Report
     console.log("...Step 3: Generating Narrative");
-    const finalResult = await generateFinalReport(scoredCourses, formattedAnswers, isUG, undefined, subjectPreference) as any;
+    const finalResult = await generateFinalReport(scoredCourses, formattedAnswers, isUG, undefined, subjectPreference, contactName) as any;
     console.log("✅ Analysis Complete.");
 
     // 4. Analyze Stated Degree Preference (if provided)
@@ -840,6 +870,18 @@ const getMockAnalysisResult = (level: '12' | 'UG', errorMessage?: string): Analy
       commonInterests: ["Generative Art", "Startup Culture", "Sci-Fi Literature", "Hackathons"]
     },
     audioScript: "Hey, Future Innovator. It's clear you've got a massive drive to build and create. That's why Computer Science is such a perfect match—it gives you the structural logic you need to turn those big ideas into reality. You're not just looking for a degree; you're building a foundation to lead the tech world. Let's see what you can build.",
+    parentLetterData: {
+      salutation: "Dear Future Leader's parents,",
+      paragraph1: "We hope you are doing well.",
+      paragraph2: "After carefully reviewing Future Leader's assessment, we wanted to personally share what their results truly mean, not just in numbers, but in possibility.",
+      paragraph3: "Your child has been identified as a 'Simulation Mode Archetype,' a rare profile marked by deep analytical thinking and pattern recognition. With a remarkable 95 percent alignment score, their strengths clearly point toward a future shaped by intelligence, innovation, and impact.",
+      paragraph4: "What stands out most is not only their natural ability with structural logic but their genuine curiosity for solving complex problems. Students like Future Leader are often the ones who build intelligent systems, design advanced technologies, and uncover insights that guide important decisions. They do not simply adapt to the future. They help shape it.",
+      paragraph5: "Their profile strongly aligns with forward-looking fields such as Computer Science, Engineering, and Design. These domains are not temporary trends. They form the foundation of tomorrow's global economy and offer strong career stability along with intellectual growth.",
+      paragraph6: "At Appli, we work closely with students and families to turn this clarity into action. Beyond assessments, Appli supports students through the entire college application journey, helping them identify the right programs, evaluate the right institutions, and submit applications with confidence and structure. Our goal is to ensure that talent like Future Leader finds the right academic environment to thrive.",
+      paragraph7: "Most importantly, this path builds on who they already are. With your continued encouragement and the right academic guidance, they are well positioned for a future that is both meaningful and secure.",
+      paragraph8: "The future ahead of them is not uncertain. It is full of promise.",
+      signOff: "Warm regards,\nAppli\nwww.appli.global"
+    },
     userData: {
       name: "Future Leader",
       contact: ""

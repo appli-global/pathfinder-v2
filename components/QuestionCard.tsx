@@ -502,7 +502,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
             <div className="mt-8">
               <div className="bg-pink-50 border border-pink-100 rounded-xl p-6 mb-8 text-center">
                 <p className="text-slate-600 mb-2">You are one step away from your detailed analysis.</p>
-                <p className="text-sm text-slate-500">Secure payment via Razorpay</p>
+                {question.paymentLink && <p className="text-sm text-slate-500">Secure payment via Razorpay</p>}
               </div>
 
               <button

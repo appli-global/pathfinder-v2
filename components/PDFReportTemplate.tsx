@@ -523,6 +523,145 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                 </div>
 
             </div>
+
+            {/* --- PAGE 9 (Formerly 10): LETTER FOR PARENTS --- */}
+            <div className="w-full h-[1123px] bg-white flex flex-col page-break relative overflow-hidden">
+                {/* Background SVG vector graphics matching the design */}
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <img
+                        src="/letter-for-parents-bg.svg"
+                        alt=""
+                        className="w-full h-full object-cover"
+                        style={{
+                            imageRendering: 'high-quality',
+                            WebkitPrintColorAdjust: 'exact',
+                            printColorAdjust: 'exact'
+                        }}
+                    />
+                </div>
+
+                {data.parentLetterData ? (
+                    <div className="relative z-10 px-[4.5rem] pt-24 pb-16 flex flex-col h-full">
+                        {/* Title Section (Designed to match the SVG's embedded title roughly just in case background is clean, though SVG likely includes the title graphics) */}
+                        <div className="mt-24 text-slate-700 text-[13.5px] leading-[1.65] font-normal w-full max-w-[95%] space-y-4 whitespace-pre-line tracking-tight">
+                            <p>{cleanText(data.parentLetterData.salutation)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph1)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph2)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph3)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph4)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph5)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph6)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph7)}</p>
+                            <p>{cleanText(data.parentLetterData.paragraph8)}</p>
+
+                            <div className="text-[13.5px] pt-2 whitespace-nowrap text-slate-700 font-normal leading-[1.5]">
+                                <div>Warm regards,</div>
+                                <div>Appli</div>
+                                <a href="https://www.appli.global" target="_blank" rel="noopener noreferrer" className="text-[#ED1164] hover:underline">
+                                    www.appli.global
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative z-10 p-16 flex items-center justify-center h-full">
+                        <p className="text-slate-400">Personalized letter generating...</p>
+                    </div>
+                )}
+            </div>
+
+            {/* --- PAGE 10: THANK YOU & ABOUT (NATIVELY RENDERED) --- */}
+            <div className="w-full h-[1123px] bg-white flex flex-col page-break relative overflow-hidden">
+
+                {/* TOP SECTION: Pink Header */}
+                <div className="w-full bg-[#ED1164] text-white px-16 pt-24 pb-16 flex-shrink-0">
+                    <h1 className="text-[42px] leading-[1.1] font-normal mb-8 tracking-tight">
+                        Thank You for<br />Choosing Clarity
+                    </h1>
+                    <p className="text-[15px] leading-relaxed max-w-[90%] font-light mb-12 opacity-95">
+                        Choosing to seek clarity before making important academic decisions is a thoughtful and responsible step. By understanding strengths and alignment early, you have already made a wise decision for the future.
+                    </p>
+                    <p className="text-[15px] font-light opacity-95 mt-auto">
+                        Wishing you the best,<br />
+                        Team Appli
+                    </p>
+                </div>
+
+                {/* BOTTOM SECTION: About & Features */}
+                <div className="flex-1 px-16 pt-12 flex flex-col relative z-10 bg-white">
+
+                    <h2 className="text-[32px] font-bold text-[#1a1a2e] mb-4 tracking-tight">About Appli</h2>
+                    <p className="text-[#333] text-[15px] leading-relaxed max-w-[85%] mb-10">
+                        Appli is India's first common application and guidance platform created to simplify the college journey for students and families.
+                    </p>
+
+                    <div className="flex flex-col gap-8 max-w-[85%]">
+                        {/* Feature 1 */}
+                        <div className="flex items-start gap-4">
+                            <div className="text-[#ED1164] mt-1">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Career Pathfinder</h3>
+                                <p className="text-[#555] text-[13px] leading-relaxed">
+                                    Get clarity on the right course that matches your interests and also has strong future demand.
+                                </p>
+                            </div>
+                        </div>
+                        <hr className="border-slate-100" />
+
+                        {/* Feature 2 */}
+                        <div className="flex items-start gap-4">
+                            <div className="text-[#ED1164] mt-1">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Discover Courses</h3>
+                                <p className="text-[#555] text-[13px] leading-relaxed">
+                                    Find a course that matches your interests and goals. Discover the skills you'll gain, potential careers, and colleges offering it.
+                                </p>
+                            </div>
+                        </div>
+                        <hr className="border-slate-100" />
+
+                        {/* Feature 3 */}
+                        <div className="flex items-start gap-4">
+                            <div className="text-[#ED1164] mt-1">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Find colleges</h3>
+                                <p className="text-[#555] text-[13px] leading-relaxed">
+                                    Find colleges offering it. Get info on fees, curriculum, alumni, placements, and admissions. Interested? Apply via Appli.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer Box */}
+                    <div className="mt-auto border-t border-slate-200 pt-6 pb-6 w-full flex justify-between items-center relative z-10 bg-white">
+                        <p className="font-bold text-[#1a1a2e] text-[12.5px] max-w-[60%]">
+                            If this platform has helped your family, please share Appli with other students and parents who could benefit.
+                        </p>
+                        <div className="flex gap-3">
+                            <div className="bg-black text-white px-3 py-1.5 rounded-md flex items-center gap-2">
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] uppercase tracking-wide leading-none">Get it on</span>
+                                    <span className="text-[13px] font-semibold leading-none">Google Play</span>
+                                </div>
+                            </div>
+                            <div className="bg-black text-white px-3 py-1.5 rounded-md flex items-center gap-2">
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13.03 4.8C13.73 3.96 14.2 2.73 14.07 1.5c-1.06.04-2.35.71-3.09 1.58-.66.75-1.18 2.01-1.01 3.2 1.18.09 2.36-.63 3.06-1.48z" /></svg>
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] uppercase tracking-wide leading-none">Download on the</span>
+                                    <span className="text-[13px] font-semibold leading-none">App Store</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
