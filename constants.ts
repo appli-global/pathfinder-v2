@@ -318,7 +318,7 @@ const parseCoursesFromCSV = (csvData: string): Course[] => {
   return courses;
 };
 
-const ALL_COURSES = parseCoursesFromCSV(RAW_COURSE_DATA);
+export const ALL_COURSES = parseCoursesFromCSV(RAW_COURSE_DATA);
 
 // Filter lists logic - INCLUSIVE STRATEGY
 // We want to ensure EVERY course finds a home unless strictly excluded.

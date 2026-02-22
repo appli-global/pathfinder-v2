@@ -388,6 +388,25 @@ input[type='range'].slider-black::-moz-range-thumb {
     size: A4 portrait;
     margin: 0;
   }
+  
+  /* CRITICAL: Enforce strict page breaks for each page div */
+  .page-break {
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    break-after: page !important;
+    break-inside: avoid !important;
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+    height: 1123px !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  /* Remove page break after the last page */
+  .page-break:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
 }
 
 /* =========================================

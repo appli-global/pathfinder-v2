@@ -22,7 +22,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
         <div id="pdf-report-target" className="w-[794px] bg-white text-slate-900 font-sans hidden-on-screen">
 
             {/* --- PAGE 1: COVER --- */}
-            <div className="w-full h-[1123px] relative bg-[#1a0b2e] overflow-hidden flex flex-col justify-between p-12 text-white page-break">
+            <div className="w-full h-[1123px] max-h-[1123px] overflow-hidden shrink-0 relative bg-[#1a0b2e] flex flex-col justify-between p-12 text-white page-break box-border">
                 {/* Background Image from User */}
                 <div className="absolute inset-0 z-0">
                     <img src="/report-cover-bg.png" className="w-full h-full object-cover" alt="Cover Background" />
@@ -54,7 +54,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 2: ARCHETYPE & MATCH --- */}
-            <div className="w-full h-[1123px] relative bg-white p-16 flex flex-col page-break">
+            <div className="w-full h-[1123px] max-h-[1123px] overflow-hidden shrink-0 relative bg-white p-16 flex flex-col page-break box-border">
                 {/* Match Score Hero Section */}
                 <div className="relative h-[350px] bg-white rounded-3xl overflow-hidden mb-12 border border-slate-100">
                     {/* Background Graph - Subtle */}
@@ -107,7 +107,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 3: DRIVERS --- */}
-            <div className="w-full h-[1123px] bg-white p-16 flex flex-col justify-center page-break">
+            <div className="w-full h-[1123px] max-h-[1123px] overflow-hidden shrink-0 bg-white p-16 flex flex-col justify-center page-break box-border">
                 <h2 className="text-xl font-bold tracking-[0.2em] text-slate-500 uppercase mb-12">What Drives You</h2>
 
                 <div className="space-y-8">
@@ -134,7 +134,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 4: VISION BOARD --- */}
-            <div className="w-full h-[1123px] max-h-[1123px] bg-white flex flex-col page-break overflow-hidden">
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 bg-white flex flex-col page-break overflow-hidden box-border">
                 {/* Top Half: Day in Life */}
                 <div className="p-12 flex-1 flex flex-col justify-center">
                     <h4 className="text-sm font-bold tracking-[0.2em] text-slate-400 uppercase mb-2">Your Career Vision Board</h4>
@@ -216,7 +216,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 5: SKILL SIGNATURE --- */}
-            <div className="w-full h-[1123px] bg-white relative flex flex-col page-break overflow-hidden">
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 bg-white relative flex flex-col page-break overflow-hidden box-border">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <img
@@ -279,12 +279,12 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 6: TOP RECOMMENDATIONS --- */}
-            <div className="w-full h-[1123px] bg-white p-16 flex flex-col page-break">
-                <h2 className="text-xl font-bold tracking-[0.2em] text-slate-500 uppercase mb-16">Top Course Recommendations</h2>
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 overflow-hidden bg-white px-16 pt-12 pb-10 flex flex-col page-break box-border">
+                <h2 className="text-xl font-bold tracking-[0.2em] text-slate-500 uppercase mb-10 shrink-0">Top Course Recommendations</h2>
 
-                <div className="space-y-10">
+                <div className="flex-1 flex flex-col justify-around min-h-0 space-y-4">
                     {data.recommendations.map((rec, i) => (
-                        <div key={i} className="flex gap-8 items-start pb-8 border-b border-slate-200 last:border-0">
+                        <div key={i} className="flex gap-8 items-start pb-6 border-b border-slate-200 last:border-0 shrink-0">
                             {/* Blue Document Icon */}
                             {/* Blue Document Icon with Image */}
                             <div className="w-32 h-40 relative shrink-0">
@@ -323,7 +323,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
 
             {/* --- PAGE 7: STATED PREFERENCE (NEW) --- */}
             {data.degreePreferenceAnalysis && (
-                <div className="w-full h-[1123px] bg-white p-16 flex flex-col page-break relative overflow-hidden">
+                <div className="w-full h-[1123px] max-h-[1123px] shrink-0 bg-white px-16 py-12 flex flex-col page-break relative overflow-hidden box-border">
                     {/* Background blob for style */}
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-50 rounded-full blur-[100px] pointer-events-none -z-10 translate-x-1/3 -translate-y-1/3"></div>
 
@@ -408,11 +408,11 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             )}
 
             {/* --- PAGE 8: ALTERNATIVES & COMMUNITY --- */}
-            <div className="w-full h-[1123px] bg-white p-16 flex flex-col page-break">
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 overflow-hidden bg-white p-12 flex flex-col page-break box-border">
 
                 {/* Alternatives Section */}
-                <div className="mb-16">
-                    <h2 className="text-xl font-bold tracking-[0.2em] text-slate-500 uppercase mb-12">Alternative Pathways</h2>
+                <div className="mb-10 shrink-0">
+                    <h2 className="text-xl font-bold tracking-[0.2em] text-slate-500 uppercase mb-8 shrink-0">Alternative Pathways</h2>
                     <div className="grid grid-cols-3 gap-6">
                         {data.alternativePathways.map((alt, i) => (
                             <div key={i} className="flex flex-col gap-4 border-r border-slate-200 last:border-0 pr-6 last:pr-0">
@@ -465,10 +465,10 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                 </div>
 
                 {/* Divider */}
-                <div className="w-full h-px bg-slate-100 mb-12"></div>
+                <div className="w-full h-px bg-slate-100 mb-8 shrink-0"></div>
 
                 {/* Community Insights Section */}
-                <div className="flex-1 bg-[#F5F3F0] min-h-0 rounded-3xl p-12 relative overflow-hidden">
+                <div className="flex-1 bg-[#F5F3F0] min-h-0 rounded-3xl p-10 relative overflow-hidden flex flex-col justify-center">
                     {/* Header with Title and Avatars */}
                     <div className="flex items-center justify-between mb-4 relative z-10">
                         <div className="flex-1">
@@ -525,7 +525,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 9 (Formerly 10): LETTER FOR PARENTS --- */}
-            <div className="w-full h-[1123px] bg-white flex flex-col page-break relative overflow-hidden">
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 bg-white flex flex-col page-break relative overflow-hidden box-border">
                 {/* Background SVG vector graphics matching the design */}
                 <div className="absolute inset-0 z-0 pointer-events-none">
                     <img
@@ -541,9 +541,9 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                 </div>
 
                 {data.parentLetterData ? (
-                    <div className="relative z-10 px-[4.5rem] pt-24 pb-16 flex flex-col h-full">
-                        {/* Title Section (Designed to match the SVG's embedded title roughly just in case background is clean, though SVG likely includes the title graphics) */}
-                        <div className="mt-24 text-slate-700 text-[13.5px] leading-[1.65] font-normal w-full max-w-[95%] space-y-4 whitespace-pre-line tracking-tight">
+                    <div className="relative z-10 px-[4.5rem] pt-24 pb-12 flex flex-col h-full overflow-hidden">
+                        {/* Title Section */}
+                        <div className="mt-20 text-slate-700 text-[13px] leading-[1.65] font-normal w-full max-w-[95%] space-y-3 whitespace-pre-line tracking-tight">
                             <p>{cleanText(data.parentLetterData.salutation)}</p>
                             <p>{cleanText(data.parentLetterData.paragraph1)}</p>
                             <p>{cleanText(data.parentLetterData.paragraph2)}</p>
@@ -571,11 +571,11 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             </div>
 
             {/* --- PAGE 10: THANK YOU & ABOUT (NATIVELY RENDERED) --- */}
-            <div className="w-full h-[1123px] bg-white flex flex-col page-break relative overflow-hidden">
+            <div className="w-full h-[1123px] max-h-[1123px] shrink-0 bg-white flex flex-col page-break relative overflow-hidden box-border">
 
                 {/* TOP SECTION: Pink Header */}
-                <div className="w-full bg-[#ED1164] text-white px-16 pt-24 pb-16 flex-shrink-0">
-                    <h1 className="text-[42px] leading-[1.1] font-normal mb-8 tracking-tight">
+                <div className="w-full bg-[#ED1164] text-white px-16 pt-20 pb-12 flex-shrink-0">
+                    <h1 className="text-[42px] leading-[1.1] font-normal mb-6 tracking-tight">
                         Thank You for<br />Choosing Clarity
                     </h1>
                     <p className="text-[15px] leading-relaxed max-w-[90%] font-light mb-12 opacity-95">
@@ -639,8 +639,8 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                     </div>
 
                     {/* Footer Box */}
-                    <div className="mt-auto border-t border-slate-200 pt-6 pb-6 w-full flex justify-between items-center relative z-10 bg-white">
-                        <p className="font-bold text-[#1a1a2e] text-[12.5px] max-w-[60%]">
+                    <div className="mt-auto border-t border-slate-200 pt-4 pb-4 w-full flex justify-between items-center relative z-10 bg-white shrink-0">
+                        <p className="font-bold text-[#1a1a2e] text-[12.5px] max-w-[60%] leading-relaxed mt-2">
                             If this platform has helped your family, please share Appli with other students and parents who could benefit.
                         </p>
                         <div className="flex gap-3">
