@@ -9,7 +9,7 @@ type Level = '12' | 'UG';
 type AppStep = 'WELCOME' | 'SECTION_TRANSITION' | 'QUIZ';
 
 export const QuizPage: React.FC = () => {
-    const [appStep, setAppStep] = useState<AppStep>('WELCOME');
+    const [appStep, setAppStep] = useState<AppStep>('QUIZ');
     const [selectedLevel, setSelectedLevel] = useState<Level>('12');
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [answers, setAnswers] = useState<AnswerMap>({});

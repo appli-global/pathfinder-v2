@@ -387,6 +387,9 @@ input[type='range'].slider-black::-moz-range-thumb {
     background-color: white !important;
     width: 794px !important;
     min-width: 794px !important;
+    -webkit-text-size-adjust: 100% !important;
+    -moz-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
   }
 
   @page {
@@ -411,6 +414,18 @@ input[type='range'].slider-black::-moz-range-thumb {
   .page-break:last-child {
     page-break-after: auto !important;
     break-after: auto !important;
+  }
+
+  /* CRITICAL SAFARI FIX: Safari injects forced margins for print headers/footers.
+     This reduces the active printable area. If height > ~1050px, Safari splits
+     the div across two physical pages. Height is reduced slightly to fit. 
+     Chrome handles scaling automatically, so this targets WebKit explicitly. */
+  @supports (-webkit-hyphens: none) {
+    .page-break {
+      min-height: 1020px !important;
+      max-height: 1020px !important;
+      height: 1020px !important;
+    }
   }
 }
 

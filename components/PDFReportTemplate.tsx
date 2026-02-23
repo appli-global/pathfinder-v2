@@ -147,58 +147,61 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                 {/* Bottom Half: Dark Themes (Split Layout) */}
                 <div className="h-[45%] flex min-h-0">
                     {/* Left: Core Themes Visual (Image Implementation) */}
-                    <div className="w-[65%] relative bg-[#090020] flex items-center justify-center overflow-hidden">
-                        {/* Static Background Image */}
-                        <img
-                            src="/core-themes-bg.png"
-                            className="w-full h-full object-contain opacity-90"
-                            alt="Core Themes Diagram"
-                            style={{
-                                printColorAdjust: 'exact',
-                                WebkitPrintColorAdjust: 'exact'
-                            }}
-                        />
+                    <div className="w-[65%] bg-[#090020] flex items-center justify-center overflow-hidden">
 
-                        {/* Overlay Text - Positioned to match the 4 circles in the image */}
-                        {/* Top Left circle center: ~29% from left, ~29% from top */}
-                        {data.visionBoard.keyThemes[0] && (
-                            <div className="absolute flex items-center justify-center text-center w-28"
-                                style={{ top: '29%', left: '29%', transform: 'translate(-50%, -50%)' }}>
-                                <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                    {data.visionBoard.keyThemes[0]}
-                                </span>
-                            </div>
-                        )}
+                        <div className="relative aspect-square h-full max-h-full max-w-full flex items-center justify-center">
+                            {/* Static Background Image */}
+                            <img
+                                src="/core-themes-bg.png"
+                                className="absolute inset-0 w-full h-full object-contain opacity-90"
+                                alt="Core Themes Diagram"
+                                style={{
+                                    printColorAdjust: 'exact',
+                                    WebkitPrintColorAdjust: 'exact'
+                                }}
+                            />
 
-                        {/* Top Right circle center: ~71% from left, ~29% from top */}
-                        {data.visionBoard.keyThemes[1] && (
-                            <div className="absolute flex items-center justify-center text-center w-28"
-                                style={{ top: '29%', left: '71%', transform: 'translate(-50%, -50%)' }}>
-                                <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                    {data.visionBoard.keyThemes[1]}
-                                </span>
-                            </div>
-                        )}
+                            {/* Overlay Text - Positioned to match the 4 circles in the image */}
+                            {/* Top Left circle center: ~29% from left, ~29% from top */}
+                            {data.visionBoard.keyThemes[0] && (
+                                <div className="absolute flex items-center justify-center text-center w-28"
+                                    style={{ top: '29%', left: '29%', transform: 'translate(-50%, -50%)' }}>
+                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
+                                        {data.visionBoard.keyThemes[0]}
+                                    </span>
+                                </div>
+                            )}
 
-                        {/* Bottom Left circle center: ~29% from left, ~71% from top */}
-                        {data.visionBoard.keyThemes[2] && (
-                            <div className="absolute flex items-center justify-center text-center w-28"
-                                style={{ top: '71%', left: '29%', transform: 'translate(-50%, -50%)' }}>
-                                <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                    {data.visionBoard.keyThemes[2]}
-                                </span>
-                            </div>
-                        )}
+                            {/* Top Right circle center: ~71% from left, ~29% from top */}
+                            {data.visionBoard.keyThemes[1] && (
+                                <div className="absolute flex items-center justify-center text-center w-28"
+                                    style={{ top: '29%', left: '71%', transform: 'translate(-50%, -50%)' }}>
+                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
+                                        {data.visionBoard.keyThemes[1]}
+                                    </span>
+                                </div>
+                            )}
 
-                        {/* Bottom Right circle center: ~71% from left, ~71% from top */}
-                        {data.visionBoard.keyThemes[3] && (
-                            <div className="absolute flex items-center justify-center text-center w-28"
-                                style={{ top: '71%', left: '71%', transform: 'translate(-50%, -50%)' }}>
-                                <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                    {data.visionBoard.keyThemes[3]}
-                                </span>
-                            </div>
-                        )}
+                            {/* Bottom Left circle center: ~29% from left, ~71% from top */}
+                            {data.visionBoard.keyThemes[2] && (
+                                <div className="absolute flex items-center justify-center text-center w-28"
+                                    style={{ top: '71%', left: '29%', transform: 'translate(-50%, -50%)' }}>
+                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
+                                        {data.visionBoard.keyThemes[2]}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Bottom Right circle center: ~71% from left, ~71% from top */}
+                            {data.visionBoard.keyThemes[3] && (
+                                <div className="absolute flex items-center justify-center text-center w-28"
+                                    style={{ top: '71%', left: '71%', transform: 'translate(-50%, -50%)' }}>
+                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
+                                        {data.visionBoard.keyThemes[3]}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right: Quote Area */}
@@ -243,7 +246,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
 
                         <div className="w-[600px] h-[500px]">
                             <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.skillSignature}>
+                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data.skillSignature} margin={{ top: 30, right: 80, bottom: 30, left: 80 }}>
                                     <PolarGrid stroke="#cbd5e1" />
                                     <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 14, fontWeight: 500 }} />
                                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />

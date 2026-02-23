@@ -394,7 +394,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
 
         <div className="chart-container flex-grow h-96 w-full relative">
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={displayData.skillSignature}>
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={displayData.skillSignature} margin={{ top: 20, right: 60, bottom: 20, left: 60 }}>
               <PolarGrid stroke="#cbd5e1" />
               <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 9, fontWeight: 700 }} />
               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
