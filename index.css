@@ -362,7 +362,8 @@ input[type='range'].slider-black::-moz-range-thumb {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
-    width: 100% !important;
+    width: 794px !important;
+    min-width: 794px !important;
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
@@ -371,24 +372,28 @@ input[type='range'].slider-black::-moz-range-thumb {
 
   /* Reset container to allow print flow */
   #pdf-report-target {
-    width: 100% !important;
-    max-width: none !important;
+    width: 794px !important;
+    min-width: 794px !important;
+    max-width: 794px !important;
     margin: 0 !important;
     box-shadow: none !important;
   }
 
-  /* Allow background graphics */
+  /* Allow background graphics and enforce width on body */
+  html,
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     background-color: white !important;
+    width: 794px !important;
+    min-width: 794px !important;
   }
 
   @page {
     size: A4 portrait;
     margin: 0;
   }
-  
+
   /* CRITICAL: Enforce strict page breaks for each page div */
   .page-break {
     page-break-after: always !important;
