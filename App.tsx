@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { QuizPage } from './pages/QuizPage';
 import { ResultsPage } from './pages/ResultsPage';
 import { PDFReportTemplate } from './components/PDFReportTemplate';
@@ -14,6 +15,7 @@ const App: React.FC = () => {
         <Route path="/pdfreport" element={<PDFReportTemplate />} />
 
       </Routes>
+      <Analytics />
     </Router>
   );
 };
