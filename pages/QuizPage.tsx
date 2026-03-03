@@ -61,12 +61,37 @@ export const QuizPage: React.FC = () => {
             }
         } else {
             // Save and redirect
-            localStorage.setItem('pathfinder_quiz_state', JSON.stringify({
+            const finalSessionId = sessionId ?? createSessionId();
+            const payload = {
                 answers: nextAnswers,
                 level: selectedLevel,
                 timestamp: Date.now(),
-                sessionId: sessionId ?? createSessionId(),
-            }));
+                sessionId: finalSessionId,
+            };
+
+            localStorage.setItem('pathfinder_quiz_state', JSON.stringify(payload));
+
+            // Fire-and-forget session log to backend (non-blocking)
+            try {
+                fetch('/api/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: finalSessionId,
+                        level: selectedLevel,
+                        answers: nextAnswers,
+                        stage: 'completed',
+                    }),
+                })
+                    .then(() => {
+                        console.debug('[session-client] Logged completed stage', { sessionId: finalSessionId });
+                    })
+                    .catch((err) => {
+                        console.warn('Failed to log session (completed stage)', err);
+                    });
+            } catch (err) {
+                console.warn('Failed to start session logging (completed stage)', err);
+            }
             if (currentQuestion.paymentLink) {
                 window.location.href = currentQuestion.paymentLink;
             } else {

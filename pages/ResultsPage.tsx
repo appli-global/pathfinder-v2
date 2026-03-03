@@ -236,6 +236,33 @@ export const ResultsPage: React.FC = () => {
                         }));
                         localStorage.removeItem('pathfinder_quiz_state');
                         setAnalysisResult(result);
+
+                        // Log analyzed stage to backend (fire-and-forget)
+                        try {
+                            const summary = {
+                                archetype: result.archetype?.title ?? null,
+                                topCourse: result.recommendations?.[0]?.courseName ?? null,
+                            };
+
+                            fetch('/api/session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    sessionId: sessionId ?? null,
+                                    level,
+                                    stage: 'analyzed',
+                                    resultSummary: summary,
+                                }),
+                            })
+                                .then(() => {
+                                    console.debug('[session-client] Logged analyzed stage', { sessionId: sessionId ?? null });
+                                })
+                                .catch((err) => {
+                                    console.warn('Failed to log session (analyzed stage)', err);
+                                });
+                        } catch (err) {
+                            console.warn('Failed to start session logging (analyzed stage)', err);
+                        }
                         setLoading(false);
                     })
                     .catch(err => {
