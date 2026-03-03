@@ -1,9 +1,11 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QUESTIONS_12TH, QUESTIONS_UG } from '../constants';
 import { QuestionCard } from '../components/QuestionCard';
 import { AnswerMap } from '../types';
+
+const createSessionId = () =>
+  `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 
 type Level = '12' | 'UG';
 type AppStep = 'WELCOME' | 'SECTION_TRANSITION' | 'QUIZ';
@@ -16,11 +18,14 @@ export const QuizPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [pendingNextIndex, setPendingNextIndex] = useState<number>(0);
     const [transitionSection, setTransitionSection] = useState<{ num: string; title: string; intro: string } | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const activeQuestions = selectedLevel === '12' ? QUESTIONS_12TH : QUESTIONS_UG;
 
     const handleStart = () => {
+        const newSessionId = createSessionId();
+        setSessionId(newSessionId);
         setAppStep('QUIZ');
         setAnswers({});
         setError(null);
@@ -59,7 +64,8 @@ export const QuizPage: React.FC = () => {
             localStorage.setItem('pathfinder_quiz_state', JSON.stringify({
                 answers: nextAnswers,
                 level: selectedLevel,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                sessionId: sessionId ?? createSessionId(),
             }));
             if (currentQuestion.paymentLink) {
                 window.location.href = currentQuestion.paymentLink;

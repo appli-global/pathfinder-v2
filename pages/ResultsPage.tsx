@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LoadingScreen } from '../components/LoadingScreen';
 import { ResultsView } from '../components/ResultsView';
 import { AnalysisResult } from '../types';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { analyzeCareerPath } from '../services/geminiService';
 
 // Simple Error Boundary to catch render crashes (e.g. missing data fields)
@@ -222,33 +222,19 @@ export const ResultsPage: React.FC = () => {
         // 2. If no result, check if we have a quiz state to process (Post-Payment)
         const quizState = localStorage.getItem('pathfinder_quiz_state');
         if (quizState) {
-            // PAYMENT VERIFICATION: Check for success parameter
-            const isSuccess = searchParams.get('success') === 'true';
-            const isTest = searchParams.get('test') === 'true';
-
-            if (!isSuccess && !isTest) {
-                console.warn("Missing payment success parameter.");
-                setError("Payment verification missing. Please access this page after completing the payment.");
-                setLoading(false);
-                return;
-            }
-
-            // 2. PROCEED TO ANALYSIS (Payment Verified)
             try {
                 const parsedState = JSON.parse(quizState);
+                const { answers, level, sessionId } = parsedState;
                 setLoading(true);
 
-                // TRIGGER AI ANALYSIS
-                analyzeCareerPath(parsedState.answers, parsedState.level)
+                analyzeCareerPath(answers, level)
                     .then(result => {
-                        // Save Result
                         localStorage.setItem('pathfinder_analysis_result', JSON.stringify({
                             timestamp: Date.now(),
-                            data: result
+                            sessionId: sessionId ?? null,
+                            data: result,
                         }));
-                        // Clear Quiz State
                         localStorage.removeItem('pathfinder_quiz_state');
-
                         setAnalysisResult(result);
                         setLoading(false);
                     })
