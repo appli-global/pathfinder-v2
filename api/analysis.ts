@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import { estimateTokenCountFromJson } from '../utils/tokenCount';
+import { estimateTokenCountFromJson } from './tokenCount';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';

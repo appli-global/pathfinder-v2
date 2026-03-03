@@ -1,5 +1,5 @@
-// Frontend/client token counting utility used in the React/Vite bundle (e.g. geminiService).
-// Note: This is an approximation. We assume ~4 characters per token for English-like text.
+// Backend-only token counting utility for Vercel serverless functions.
+// This file is used by API routes under `api/` (Node environment).
 
 export function estimateTokenCountFromText(text: string): number {
   const chars = text.length;
