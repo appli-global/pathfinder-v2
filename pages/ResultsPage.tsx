@@ -229,11 +229,17 @@ export const ResultsPage: React.FC = () => {
 
                 analyzeCareerPath(answers, level)
                     .then(result => {
-                        localStorage.setItem('pathfinder_analysis_result', JSON.stringify({
-                            timestamp: Date.now(),
-                            sessionId: sessionId ?? null,
+                        const finalSessionId = sessionId ?? null;
+                        const timestamp = Date.now();
+
+                        // Persist locally in the same wrapped format
+                        const wrappedAnalysis = {
+                            timestamp,
+                            sessionId: finalSessionId,
                             data: result,
-                        }));
+                        };
+
+                        localStorage.setItem('pathfinder_analysis_result', JSON.stringify(wrappedAnalysis));
                         localStorage.removeItem('pathfinder_quiz_state');
                         setAnalysisResult(result);
 
@@ -248,20 +254,37 @@ export const ResultsPage: React.FC = () => {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                    sessionId: sessionId ?? null,
+                                    sessionId: finalSessionId,
                                     level,
                                     stage: 'analyzed',
                                     resultSummary: summary,
                                 }),
                             })
                                 .then(() => {
-                                    console.debug('[session-client] Logged analyzed stage', { sessionId: sessionId ?? null });
+                                    console.debug('[session-client] Logged analyzed stage', { sessionId: finalSessionId });
                                 })
                                 .catch((err) => {
                                     console.warn('Failed to log session (analyzed stage)', err);
                                 });
+
+                            // Also persist full analysis result into dedicated collection
+                            fetch('/api/analysis', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    sessionId: finalSessionId,
+                                    level,
+                                    analysis: wrappedAnalysis,
+                                }),
+                            })
+                                .then(() => {
+                                    console.debug('[analysis-client] Logged full analysis', { sessionId: finalSessionId });
+                                })
+                                .catch((err) => {
+                                    console.warn('[analysis-client] Failed to log full analysis', err);
+                                });
                         } catch (err) {
-                            console.warn('Failed to start session logging (analyzed stage)', err);
+                            console.warn('Failed to start session logging (analyzed stage / analysis)', err);
                         }
                         setLoading(false);
                     })
