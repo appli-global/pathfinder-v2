@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { estimateTokenCountFromJson } from '../utils/tokenCount';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -41,6 +42,8 @@ export default async function handler(req: any, res: any) {
 
     const now = new Date();
 
+    const tokenCount = estimateTokenCountFromJson(analysis);
+
     await collection.updateOne(
       { sessionId },
       {
@@ -48,6 +51,7 @@ export default async function handler(req: any, res: any) {
           sessionId,
           level,
           analysis,
+          tokenCount,
           updatedAt: now,
         },
         $setOnInsert: {

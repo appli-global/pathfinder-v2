@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { COURSE_CATALOG, MASTERS_CATALOG, SKILL_COLUMNS, VALID_COURSE_NAMES } from "../constants";
 import { AnalysisResult, AnswerMap, Course } from "../types";
+import { estimateTokenCountFromText } from "../utils/tokenCount";
 
 // Robust API Key loading for both Vite (Client) and standard Node (Server/Test) contexts
 const getApiKey = () => {
@@ -439,6 +440,10 @@ const generateFinalReport = async (
        - **Paragraph 8**: "Most importantly, this path builds on who [he/she/they] already [is/are]. With your continued encouragement and the right academic guidance, [he/she/they] [is/are] well positioned for a future that is both meaningful and secure.\n\nThe future ahead of [him/her/them] is not uncertain. It is full of promise."
        - **SignOff**: "Warm regards,\nAppli\nwww.appli.global"
   `;
+
+  // Log approximate token usage for the Gemini prompt
+  const approxTokens = estimateTokenCountFromText(prompt);
+  console.debug('[gemini] Prompt length (chars):', prompt.length, 'approx tokens:', approxTokens);
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
