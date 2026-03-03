@@ -56,50 +56,40 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
             {/* --- PAGE 2: ARCHETYPE & MATCH --- */}
             <div className="w-full h-[1123px] max-h-[1123px] overflow-hidden shrink-0 relative bg-white p-16 flex flex-col page-break box-border">
                 {/* Match Score Hero Section */}
-                <div className="relative h-[350px] bg-white rounded-3xl overflow-hidden mb-12 border border-slate-100">
-                    {/* Background Graph - Subtle */}
-                    <div className="absolute inset-0 opacity-10">
+                <div className="relative pt-12 pb-4 mb-8 flex items-center">
+                    {/* Background Graphic */}
+                    <div className="absolute top-[-2rem] right-0 w-full max-w-[750px] pointer-events-none z-0">
                         <img
                             src="/match-graph.png"
                             alt="Match Graph"
-                            className="w-full h-full object-cover"
-                            style={{ imageRendering: 'crisp-edges' }}
+                            className="w-full h-auto object-contain object-right-top"
+                            style={{
+                                imageRendering: 'high-quality',
+                                WebkitPrintColorAdjust: 'exact',
+                                printColorAdjust: 'exact'
+                            }}
                         />
                     </div>
-
-                    {/* Background Graph - Behind Percentage (More Visible) */}
-                    <div className="absolute top-0 right-0 w-1/3 h-full opacity-20">
-                        <img
-                            src="/match-graph.png"
-                            alt="Match Graph"
-                            className="w-full h-full object-cover"
-                            style={{ imageRendering: 'crisp-edges' }}
-                        />
-                    </div>
-
-                    {/* Green Dot Indicator */}
-                    <div className="absolute top-8 right-8 w-4 h-4 bg-[#22c55e] rounded-full shadow-lg"></div>
 
                     {/* Content */}
-                    <div className="relative z-10 h-full flex items-center justify-start px-16">
-                        {/* Large Score Numbers */}
-                        <div className="flex items-center gap-6">
-                            <span className="text-[200px] leading-none font-extrabold text-[#22c55e] tracking-tighter">
-                                98
-                            </span>
-                            <div className="flex flex-col items-start justify-center">
-                                <span className="text-5xl font-extrabold text-[#0F0F25] leading-none">Match</span>
-                                <span className="text-5xl font-extrabold text-[#0F0F25] leading-none">Score</span>
-                                <span className="text-7xl font-extrabold text-[#0F0F25] leading-none mt-2">%</span>
-                            </div>
+                    <div className="relative z-10 flex items-center justify-start ml-2 mt-4 w-full">
+                        {/* Dynamic Score Number */}
+                        <span className="text-[260px] leading-[0.8] font-extrabold text-[#22c55e] tracking-tighter" style={{ letterSpacing: '-0.06em' }}>
+                            {data.recommendations && data.recommendations.length > 0 ? data.recommendations[0].relevanceScore : 98}
+                        </span>
+
+                        <div className="flex flex-col items-start justify-center ml-8 pt-4">
+                            <span className="text-[44px] font-extrabold text-[#0F0F25] leading-[1] tracking-tight">Match</span>
+                            <span className="text-[44px] font-extrabold text-[#0F0F25] leading-[1] tracking-tight mb-1">Score</span>
+                            <span className="text-[130px] font-extrabold text-[#0F0F25] leading-[0.8] tracking-tighter relative left-[-4px]">%</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Archetype Info */}
-                <div className="mt-12">
-                    <div className="text-sm font-bold tracking-[0.2em] text-slate-400 uppercase mb-4">Archetype Identified</div>
-                    <h2 className="text-6xl font-extrabold text-[#0F0F25] mb-8">{cleanText(data.archetype.title)}</h2>
+                <div className="mt-8 relative z-10">
+                    <div className="text-[15px] font-bold tracking-[0.2em] text-[#6b7280] uppercase mb-6">Archetype Identified</div>
+                    <h2 className="text-6xl font-extrabold text-[#0F0F25] mb-8 tracking-tight leading-tight">{cleanText(data.archetype.title)}</h2>
                     <p className="text-2xl leading-relaxed text-slate-600 font-light text-justify">
                         {cleanText(data.archetype.description)}
                     </p>
@@ -149,58 +139,95 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                     {/* Left: Core Themes Visual (Image Implementation) */}
                     <div className="w-[65%] bg-[#090020] flex items-center justify-center overflow-hidden">
 
-                        <div className="relative aspect-square h-full max-h-full max-w-full flex items-center justify-center">
-                            {/* Static Background Image */}
-                            <img
-                                src="/core-themes-bg.png"
-                                className="absolute inset-0 w-full h-full object-contain opacity-90"
-                                alt="Core Themes Diagram"
-                                style={{
-                                    printColorAdjust: 'exact',
-                                    WebkitPrintColorAdjust: 'exact'
-                                }}
-                            />
+                        <div className="relative aspect-square h-full max-h-full max-w-[800px] flex items-center justify-center p-8">
+                            <svg viewBox="0 0 800 800" className="w-full h-full">
+                                <defs>
+                                    <radialGradient id="pdf-grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                        <stop offset="0%" style={{ stopColor: '#1a0b2e', stopOpacity: 1 }} />
+                                        <stop offset="100%" style={{ stopColor: '#090020', stopOpacity: 1 }} />
+                                    </radialGradient>
+                                    <path id="pdf-curveTop" d="M 310,400 A 90,90 0 0,1 490,400" />
+                                    <path id="pdf-curveBottom" d="M 310,400 A 90,90 0 0,0 490,400" />
+                                </defs>
 
-                            {/* Overlay Text - Positioned to match the 4 circles in the image */}
-                            {/* Top Left circle center: ~29% from left, ~29% from top */}
-                            {data.visionBoard.keyThemes[0] && (
-                                <div className="absolute flex items-center justify-center text-center w-28"
-                                    style={{ top: '29%', left: '29%', transform: 'translate(-50%, -50%)' }}>
-                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                        {data.visionBoard.keyThemes[0]}
-                                    </span>
-                                </div>
-                            )}
+                                {/* Background Gradient Rect */}
+                                <rect width="800" height="800" fill="url(#pdf-grad1)" />
 
-                            {/* Top Right circle center: ~71% from left, ~29% from top */}
-                            {data.visionBoard.keyThemes[1] && (
-                                <div className="absolute flex items-center justify-center text-center w-28"
-                                    style={{ top: '29%', left: '71%', transform: 'translate(-50%, -50%)' }}>
-                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                        {data.visionBoard.keyThemes[1]}
-                                    </span>
-                                </div>
-                            )}
+                                {/* Concentric Circles Background */}
+                                {[100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650].map(r => (
+                                    <circle key={r} cx="400" cy="400" r={r} fill="none" stroke="#3b82f6" strokeWidth="0.5" opacity="0.15" />
+                                ))}
 
-                            {/* Bottom Left circle center: ~29% from left, ~71% from top */}
-                            {data.visionBoard.keyThemes[2] && (
-                                <div className="absolute flex items-center justify-center text-center w-28"
-                                    style={{ top: '71%', left: '29%', transform: 'translate(-50%, -50%)' }}>
-                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                        {data.visionBoard.keyThemes[2]}
-                                    </span>
-                                </div>
-                            )}
+                                {/* Center Hub */}
+                                <circle cx="400" cy="400" r="100" fill="#090020" stroke="#3b82f6" strokeWidth="1" opacity="0.3" />
+                                <circle cx="400" cy="400" r="60" fill="#2563eb" />
+                                <path d="M400 370 C 400 385, 400 385, 415 400 C 400 415, 400 415, 430 400 C 400 415, 400 415, 415 415 C 400 400, 400 400, 400 430 C 400 415, 400 415, 385 415 C 400 400, 400 400, 370 400 C 385 400, 385 400, 400 385 C 415 400, 415 400, 400 370" fill="white" />
+                                <path d="M400 370 C 400 385, 400 385, 415 400 C 400 415, 400 415, 400 430 C 400 415, 400 415, 385 400 C 400 385, 400 385, 400 370" fill="white" />
 
-                            {/* Bottom Right circle center: ~71% from left, ~71% from top */}
-                            {data.visionBoard.keyThemes[3] && (
-                                <div className="absolute flex items-center justify-center text-center w-28"
-                                    style={{ top: '71%', left: '71%', transform: 'translate(-50%, -50%)' }}>
-                                    <span className="text-white text-base font-bold font-sans leading-tight drop-shadow-md">
-                                        {data.visionBoard.keyThemes[3]}
-                                    </span>
-                                </div>
-                            )}
+                                {/* Center Text Labels */}
+                                <text fontSize="11" fontWeight="bold" fill="white" letterSpacing="3" textAnchor="middle" style={{ textTransform: 'uppercase' }}>
+                                    <textPath href="#pdf-curveTop" startOffset="50%" side="right">Core Themes</textPath>
+                                </text>
+                                <text fontSize="11" fontWeight="bold" fill="white" letterSpacing="3" textAnchor="middle" style={{ textTransform: 'uppercase' }}>
+                                    <textPath href="#pdf-curveBottom" startOffset="50%" side="left">Core Themes</textPath>
+                                </text>
+
+                                {/* Separator Stars */}
+                                <text x="390" y="405" fill="white" fontSize="10" opacity="0.8">
+                                    <tspan x="302" dy="0">*</tspan>
+                                    <tspan x="492" dy="0">*</tspan>
+                                </text>
+
+                                {/* Satellite Nodes */}
+                                {data.visionBoard.keyThemes[0] && (() => {
+                                    const words = data.visionBoard.keyThemes[0].split('-');
+                                    const isMultiWord = words.length > 1;
+                                    return (
+                                        <g transform="translate(235, 235)">
+                                            <circle cx="0" cy="0" r="115" fill="#0B0B1E" stroke="#10b981" strokeWidth="2" />
+                                            <text x="0" y="0" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize={isMultiWord ? "22" : "26"} fontWeight="600" style={{ fontFamily: 'sans-serif' }}>
+                                                {isMultiWord ? words.map((w, i) => <tspan key={i} x="0" dy={i === 0 ? `-${(words.length - 1) * 14}` : "28"}>{w}</tspan>) : <tspan>{data.visionBoard.keyThemes[0]}</tspan>}
+                                            </text>
+                                        </g>
+                                    );
+                                })()}
+                                {data.visionBoard.keyThemes[1] && (() => {
+                                    const words = data.visionBoard.keyThemes[1].split('-');
+                                    const isMultiWord = words.length > 1;
+                                    return (
+                                        <g transform="translate(565, 235)">
+                                            <circle cx="0" cy="0" r="115" fill="#0B0B1E" stroke="#10b981" strokeWidth="2" />
+                                            <text x="0" y="0" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize={isMultiWord ? "22" : "26"} fontWeight="600" style={{ fontFamily: 'sans-serif' }}>
+                                                {isMultiWord ? words.map((w, i) => <tspan key={i} x="0" dy={i === 0 ? `-${(words.length - 1) * 14}` : "28"}>{w}</tspan>) : <tspan>{data.visionBoard.keyThemes[1]}</tspan>}
+                                            </text>
+                                        </g>
+                                    );
+                                })()}
+                                {data.visionBoard.keyThemes[2] && (() => {
+                                    const words = data.visionBoard.keyThemes[2].split('-');
+                                    const isMultiWord = words.length > 1;
+                                    return (
+                                        <g transform="translate(235, 565)">
+                                            <circle cx="0" cy="0" r="115" fill="#0B0B1E" stroke="#10b981" strokeWidth="2" />
+                                            <text x="0" y="0" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize={isMultiWord ? "22" : "26"} fontWeight="600" style={{ fontFamily: 'sans-serif' }}>
+                                                {isMultiWord ? words.map((w, i) => <tspan key={i} x="0" dy={i === 0 ? `-${(words.length - 1) * 14}` : "28"}>{w}</tspan>) : <tspan>{data.visionBoard.keyThemes[2]}</tspan>}
+                                            </text>
+                                        </g>
+                                    );
+                                })()}
+                                {data.visionBoard.keyThemes[3] && (() => {
+                                    const words = data.visionBoard.keyThemes[3].split('-');
+                                    const isMultiWord = words.length > 1;
+                                    return (
+                                        <g transform="translate(565, 565)">
+                                            <circle cx="0" cy="0" r="115" fill="#0B0B1E" stroke="#10b981" strokeWidth="2" />
+                                            <text x="0" y="0" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize={isMultiWord ? "22" : "26"} fontWeight="600" style={{ fontFamily: 'sans-serif' }}>
+                                                {isMultiWord ? words.map((w, i) => <tspan key={i} x="0" dy={i === 0 ? `-${(words.length - 1) * 14}` : "28"}>{w}</tspan>) : <tspan>{data.visionBoard.keyThemes[3]}</tspan>}
+                                            </text>
+                                        </g>
+                                    );
+                                })()}
+                            </svg>
                         </div>
                     </div>
 
@@ -591,62 +618,80 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                 </div>
 
                 {/* BOTTOM SECTION: About & Features */}
-                <div className="flex-1 px-16 pt-12 flex flex-col relative z-10 bg-white">
+                <div className="flex-1 pt-12 flex flex-col relative z-10 bg-white overflow-hidden pb-6">
 
-                    <h2 className="text-[32px] font-bold text-[#1a1a2e] mb-4 tracking-tight">About Appli</h2>
-                    <p className="text-[#333] text-[15px] leading-relaxed max-w-[85%] mb-10">
-                        Appli is India's first common application and guidance platform created to simplify the college journey for students and families.
-                    </p>
+                    {/* Girl Image Background */}
+                    <div className="absolute right-[-4rem] bottom-0 top-[-4rem] w-[85%] z-0 pointer-events-none">
+                        <img
+                            src="/girl-writing.png"
+                            alt="Student"
+                            className="w-full h-full object-cover object-right-bottom mix-blend-multiply"
+                            style={{
+                                printColorAdjust: 'exact',
+                                WebkitPrintColorAdjust: 'exact'
+                            }}
+                        />
+                    </div>
 
-                    <div className="flex flex-col gap-8 max-w-[85%]">
-                        {/* Feature 1 */}
-                        <div className="flex items-start gap-4">
-                            <div className="text-[#ED1164] mt-1">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
-                            </div>
-                            <div>
-                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Career Pathfinder</h3>
-                                <p className="text-[#555] text-[13px] leading-relaxed">
-                                    Get clarity on the right course that matches your interests and also has strong future demand.
-                                </p>
-                            </div>
-                        </div>
-                        <hr className="border-slate-100" />
+                    {/* Soft gradient bottom overlay to match the reference shade */}
+                    <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-slate-300/50 to-transparent z-0 pointer-events-none mix-blend-multiply"></div>
 
-                        {/* Feature 2 */}
-                        <div className="flex items-start gap-4">
-                            <div className="text-[#ED1164] mt-1">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
-                            </div>
-                            <div>
-                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Discover Courses</h3>
-                                <p className="text-[#555] text-[13px] leading-relaxed">
-                                    Find a course that matches your interests and goals. Discover the skills you'll gain, potential careers, and colleges offering it.
-                                </p>
-                            </div>
-                        </div>
-                        <hr className="border-slate-100" />
+                    <div className="relative z-10 max-w-[55%] flex flex-col px-16">
+                        <h2 className="text-[32px] font-bold text-[#1a1a2e] mb-4 tracking-tight">About Appli</h2>
+                        <p className="text-[#333] text-[15px] leading-relaxed mb-10">
+                            Appli is India's first common application and guidance platform created to simplify the college journey for students and families.
+                        </p>
 
-                        {/* Feature 3 */}
-                        <div className="flex items-start gap-4">
-                            <div className="text-[#ED1164] mt-1">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></svg>
+                        <div className="flex flex-col gap-8">
+                            {/* Feature 1 */}
+                            <div className="flex items-start gap-4">
+                                <div className="text-[#ED1164] mt-1 shrink-0">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Career Pathfinder</h3>
+                                    <p className="text-[#555] text-[13px] leading-relaxed">
+                                        Get clarity on the right course that matches your interests and also has strong future demand.
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Find colleges</h3>
-                                <p className="text-[#555] text-[13px] leading-relaxed">
-                                    Find colleges offering it. Get info on fees, curriculum, alumni, placements, and admissions. Interested? Apply via Appli.
-                                </p>
+                            <hr className="border-slate-100" />
+
+                            {/* Feature 2 */}
+                            <div className="flex items-start gap-4">
+                                <div className="text-[#ED1164] mt-1 shrink-0">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Discover Courses</h3>
+                                    <p className="text-[#555] text-[13px] leading-relaxed">
+                                        Find a course that matches your interests and goals. Discover the skills you'll gain, potential careers, and colleges offering it.
+                                    </p>
+                                </div>
+                            </div>
+                            <hr className="border-slate-100" />
+
+                            {/* Feature 3 */}
+                            <div className="flex items-start gap-4">
+                                <div className="text-[#ED1164] mt-1 shrink-0">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-[18px] font-bold text-[#1a1a2e] mb-1">Find colleges</h3>
+                                    <p className="text-[#555] text-[13px] leading-relaxed">
+                                        Find colleges offering it. Get info on fees, curriculum, alumni, placements, and admissions. Interested? Apply via Appli.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Footer Box */}
-                    <div className="mt-auto border-t border-slate-200 pt-4 pb-4 w-full flex justify-between items-center relative z-10 bg-white shrink-0">
-                        <p className="font-bold text-[#1a1a2e] text-[12.5px] max-w-[60%] leading-relaxed mt-2">
+                    <div className="mt-auto pt-6 px-16 w-full flex justify-between items-end relative z-10 shrink-0">
+                        <p className="font-bold text-[#1a1a2e] text-[12.5px] max-w-[55%] leading-relaxed mb-1">
                             If this platform has helped your family, please share Appli with other students and parents who could benefit.
                         </p>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 relative z-20">
                             <div className="bg-black text-white px-3 py-1.5 rounded-md flex items-center gap-2">
                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" /></svg>
                                 <div className="flex flex-col">

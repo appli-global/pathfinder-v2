@@ -177,7 +177,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                         onChange={(e) => setOtherInputValue(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && otherInputValue.trim()) {
-                            onAnswer(otherInputValue.trim());
+                            const val = otherInputValue.trim();
+                            const predefinedMatch = Array.from(ALL_PREDEFINED).find(s => s.toLowerCase() === val.toLowerCase());
+                            onAnswer(predefinedMatch || val);
                           }
                         }}
                         placeholder="Type a subject and press Enter…"
@@ -185,7 +187,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                       />
                       <button
                         onClick={() => {
-                          if (otherInputValue.trim()) onAnswer(otherInputValue.trim());
+                          if (otherInputValue.trim()) {
+                            const val = otherInputValue.trim();
+                            const predefinedMatch = Array.from(ALL_PREDEFINED).find(s => s.toLowerCase() === val.toLowerCase());
+                            onAnswer(predefinedMatch || val);
+                          }
                         }}
                         disabled={!otherInputValue.trim()}
                         className="w-10 h-10 rounded-full border-2 border-slate-200 bg-white text-slate-500 hover:border-[#ED1164] hover:text-[#ED1164] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all text-xl font-bold"
@@ -246,8 +252,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && otherInputValue.trim()) {
                             const val = otherInputValue.trim();
-                            if (!selectedSubjects.includes(val)) {
-                              setSelectedSubjects((prev) => [...prev, val]);
+                            const predefinedMatch = Array.from(ALL_PREDEFINED).find(s => s.toLowerCase() === val.toLowerCase());
+                            const finalVal = predefinedMatch || val;
+                            if (!selectedSubjects.includes(finalVal)) {
+                              setSelectedSubjects((prev) => [...prev, finalVal]);
                             }
                             setOtherInputValue('');
                           }
@@ -258,8 +266,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                       <button
                         onClick={() => {
                           const val = otherInputValue.trim();
-                          if (val && !selectedSubjects.includes(val)) {
-                            setSelectedSubjects((prev) => [...prev, val]);
+                          if (val) {
+                            const predefinedMatch = Array.from(ALL_PREDEFINED).find(s => s.toLowerCase() === val.toLowerCase());
+                            const finalVal = predefinedMatch || val;
+                            if (!selectedSubjects.includes(finalVal)) {
+                              setSelectedSubjects((prev) => [...prev, finalVal]);
+                            }
                           }
                           setOtherInputValue('');
                         }}

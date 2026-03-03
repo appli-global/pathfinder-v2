@@ -68,8 +68,9 @@ export const QUESTIONS_12TH: Question[] = [
   {
     id: 2,
     text: "Outside of academics, what do you find yourself spending time on?",
-    subtext: "(e.g., Gaming, Coding, Drawing, Reading/Writing)",
+    subtext: "",
     inputType: 'text',
+    placeholder: "e.g., coding, reading, sports, music, hanging out with friends",
     sectionTitle: "Section 2: How You Think and Work",
     sectionIntro: "Thanks {{Name}}. Grades only tell part of the story. Let's understand how you naturally think and what you actually enjoy doing.",
     options: []
@@ -135,8 +136,9 @@ export const QUESTIONS_12TH: Question[] = [
   {
     id: 8,
     text: "Are there any real-world problems you care about or want to work on?",
-    subtext: "(e.g. Climate solutions, Medical breakthroughs, AI/Tech innovation, Social justice)",
+    subtext: "",
     inputType: 'text',
+    placeholder: "e.g., climate change, healthcare, education, poverty",
     options: []
   },
   {
@@ -144,7 +146,7 @@ export const QUESTIONS_12TH: Question[] = [
     text: "Are there any degrees or career paths you are already considering?",
     subtext: "",
     inputType: 'yes_no_text',
-    placeholder: "e.g. B.Tech CS, BBA, MBBS...",
+    placeholder: "e.g., B.Tech in CS, Psychology, Law, Design",
     options: []
   },
   {
@@ -163,37 +165,42 @@ export const QUESTIONS_UG: Question[] = [
     id: 100,
     text: "What is your full name?",
     inputType: 'text',
-    placeholder: "e.g. Casey Jordan",
+    placeholder: "Type here...",
     options: []
   },
   {
     id: 1,
-    text: "Reason for looking for a change/next step right now? (e.g. money, passion, or pivot?)",
+    text: "Reason for looking for a change/next step right now?",
     inputType: 'text',
+    placeholder: "e.g., seeking career growth, pivoting industries",
     options: []
   },
   {
     id: 2,
     text: "Which hard skills are next on the list to master? (What specific technical or soft skills?)",
     inputType: 'text',
+    placeholder: "e.g., Data Analysis, React, Project Management",
     options: []
   },
   {
     id: 3,
     text: "Looking 3-5 years ahead, what is the envisioned job title or role?",
     inputType: 'text',
+    placeholder: "e.g., Senior Product Manager, Lead Developer",
     options: []
   },
   {
     id: 4,
-    text: "Describe the ideal work environment (e.g. fast-paced startup, structured corporate, remote research, etc).",
+    text: "Describe the ideal work environment.",
     inputType: 'text',
+    placeholder: "e.g., Remote, fast-paced, collaborative team",
     options: []
   },
   {
     id: 5,
     text: "If writing a thesis or leading a capstone project today, what specific topic would it cover?",
     inputType: 'text',
+    placeholder: "e.g., AI in Healthcare, Sustainable Architecture",
     options: []
   },
   {

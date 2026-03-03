@@ -366,10 +366,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
 
       {/* Left Col: Skill Signature Chart */}
       <div className="skill-section lg:col-span-1 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-8 flex flex-col border border-white">
-        <h3 className="text-xl font-bold text-slate-900 mb-2">Skill Signature</h3>
-        <p className="text-slate-500 text-sm mb-8">A visual map of your core aptitudes.</p>
 
-        <div className="space-y-4 mb-8">
+        <h3 className="text-[26px] font-extrabold text-[#0F0F25] tracking-tight mb-2">Skill Signature</h3>
+        <p className="text-slate-500 text-[15px] mb-8">A visual map of your core aptitudes.</p>
+
+        <div className="space-y-6 mb-8">
           {displayData.skillSignature.map((skill, i) => {
             // Cycle through 4 distinct colors to match the visual style requested
             const colors = ['#3b82f6', '#f59e0b', '#ec4899', '#22c55e'];
@@ -377,11 +378,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
 
             return (
               <div key={i}>
-                <div className="flex justify-between text-xs font-semibold mb-1 text-slate-600">
+                <div className="flex justify-between text-[14px] font-bold mb-2 text-[#334155]">
                   <span className="truncate pr-2" title={skill.subject}>{skill.subject}</span>
                   <span className="text-slate-400 whitespace-nowrap">{skill.A}%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-1000 ease-out"
                     style={{ width: `${skill.A}%`, backgroundColor: color }}
@@ -392,11 +393,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
           })}
         </div>
 
-        <div className="chart-container flex-grow h-96 w-full relative">
+        <div className="chart-container w-full h-80 relative">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={displayData.skillSignature} margin={{ top: 20, right: 60, bottom: 20, left: 60 }}>
               <PolarGrid stroke="#cbd5e1" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 9, fontWeight: 700 }} />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 10, fontWeight: 700 }} />
               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
               <Radar
                 name="Aptitude"

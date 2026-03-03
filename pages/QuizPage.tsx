@@ -152,14 +152,14 @@ export const QuizPage: React.FC = () => {
                     <div className="w-full max-w-2xl animate-fade-in-up">
 
                         {/* Section progress dots */}
-                        <div className="flex items-center justify-center gap-3 mb-10">
+                        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-10 w-full">
                             {sectionNames.map((name, i) => {
                                 const idx = i + 1;
                                 const isDone = idx < sectionNum;
                                 const isActive = idx === sectionNum;
                                 return (
-                                    <div key={i} className="flex items-center gap-3">
-                                        <div className="flex flex-col items-center gap-1">
+                                    <React.Fragment key={i}>
+                                        <div className="flex flex-col items-center gap-1 shrink-0">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isDone ? 'bg-[#ED1164] text-white' :
                                                 isActive ? 'bg-[#ED1164] text-white ring-4 ring-[#ED1164]/20' :
                                                     'bg-slate-100 text-slate-400'
@@ -168,14 +168,17 @@ export const QuizPage: React.FC = () => {
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                                                 ) : idx}
                                             </div>
-                                            <span className={`text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${isActive ? 'text-[#ED1164]' : isDone ? 'text-slate-400' : 'text-slate-300'}`}>
+                                            <span className={`text-[9px] md:text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap ${isActive ? 'text-[#ED1164]' : isDone ? 'text-slate-400' : 'text-slate-300'}`}>
                                                 {name}
                                             </span>
                                         </div>
                                         {i < sectionNames.length - 1 && (
-                                            <div className={`w-16 h-0.5 mb-4 rounded-full ${isDone ? 'bg-[#ED1164]' : 'bg-slate-200'}`} />
+                                            <div className={`hidden md:block w-8 lg:w-16 h-0.5 rounded-full ${isDone ? 'bg-[#ED1164]' : 'bg-slate-200'} shrink-0 mb-4`} />
                                         )}
-                                    </div>
+                                        {i < sectionNames.length - 1 && (
+                                            <div className={`md:hidden flex-1 max-w-[2rem] h-0.5 rounded-full ${isDone ? 'bg-[#ED1164]' : 'bg-slate-200'} shrink-0 mb-4`} />
+                                        )}
+                                    </React.Fragment>
                                 );
                             })}
                         </div>

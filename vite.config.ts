@@ -9,13 +9,14 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3002,
       host: '0.0.0.0',
-      allowedHosts: [
-        'localhost',
-        'dev.appli.global'
-      ],
+      allowedHosts: true,
       watch: {
         ignored: ['**/contacts.csv']
       }
+    },
+    preview: {
+      host: '0.0.0.0',
+      allowedHosts: true,
     },
     plugins: [
       react(),
