@@ -1,5 +1,4 @@
 import { MongoClient } from 'mongodb';
-import { estimateTokenCountFromJson } from './tokenCount';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -9,6 +8,22 @@ if (!uri) {
 }
 
 let cachedClient: MongoClient | null = null;
+
+// Lightweight token counting helpers scoped to this API route (backend-only).
+// Note: This is an approximation. We assume ~4 characters per token for English-like text.
+function estimateTokenCountFromText(text: string): number {
+  const chars = text.length;
+  return Math.ceil(chars / 4);
+}
+
+function estimateTokenCountFromJson(obj: unknown): number {
+  try {
+    const json = JSON.stringify(obj);
+    return estimateTokenCountFromText(json);
+  } catch {
+    return 0;
+  }
+}
 
 async function getClient() {
   if (!uri) return null;
