@@ -93,7 +93,7 @@ export default async function handler(req: any, res: any) {
     let pdfBlobUrl: string | null = null;
     try {
       const { url } = await put(blobKey, pdfBuffer, {
-        access: 'private',
+        access: 'public',
       });
       pdfBlobUrl = url;
       console.log('[pdf-api] Stored PDF blob', { sessionId, blobKey, url });
