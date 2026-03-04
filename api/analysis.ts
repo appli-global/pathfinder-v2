@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { put } from '@vercel/blob';
 import { estimateTokenCountFromJson } from '../utils/tokenCount';
 
 const uri = process.env.MONGODB_URI;
@@ -44,6 +45,19 @@ export default async function handler(req: any, res: any) {
 
     const tokenCount = estimateTokenCountFromJson(analysis);
 
+    // Store full analysis JSON as a blob in Vercel Blob storage
+    let blobUrl: string | null = null;
+    try {
+      const blobKey = `analysis/${sessionId}-${now.toISOString()}.json`;
+      const { url } = await put(blobKey, JSON.stringify(analysis, null, 2), {
+        access: 'private',
+      });
+      blobUrl = url;
+      console.log('[analysis-api] Stored analysis blob', { sessionId, blobKey, url });
+    } catch (blobErr) {
+      console.warn('[analysis-api] Failed to store analysis blob', blobErr);
+    }
+
     await collection.updateOne(
       { sessionId },
       {
@@ -52,6 +66,7 @@ export default async function handler(req: any, res: any) {
           level,
           analysis,
           tokenCount,
+          blobUrl,
           updatedAt: now,
         },
         $setOnInsert: {
@@ -64,6 +79,7 @@ export default async function handler(req: any, res: any) {
     console.log('[analysis-api] Upserted analysis result', {
       sessionId,
       level,
+      blobUrl,
     });
 
     return res.status(200).json({ ok: true });
