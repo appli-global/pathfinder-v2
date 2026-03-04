@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 import PDFDocument from 'pdfkit';
-import { put } from '@vercel/blob';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -84,43 +83,24 @@ export default async function handler(req: any, res: any) {
     const db = client.db(dbName);
     const collection = db.collection('pathfinder_analysis_result');
 
-  const pdfBuffer = createAnalysisPdf(analysis);
+    const pdfBuffer = createAnalysisPdf(analysis);
+    const now = new Date();
 
-  const now = new Date();
-  // Store PDFs under the pf-reports/reports/ prefix in Blob storage
-  // Use .pdf.b64 to indicate this is a base64-encoded PDF
-  const blobKey = `pf-reports/reports/${sessionId}-${now.toISOString()}.pdf.b64`;
-
-    // Convert the PDF buffer to a base64 string so content length is trivial
+    // Store the generated PDF as base64 directly in MongoDB (no Blob upload)
     const pdfBase64 = pdfBuffer.toString('base64');
 
-    let pdfBlobUrl: string | null = null;
-    try {
-      const { url } = await put(blobKey, pdfBase64, {
-        access: 'public',
-        contentType: 'text/plain',
-      });
-
-      pdfBlobUrl = url;
-      console.log('[pdf-api] Stored PDF blob', { sessionId, blobKey, url });
-    } catch (blobErr) {
-      console.warn('[pdf-api] Failed to store PDF blob', blobErr);
-    }
-
-    if (pdfBlobUrl) {
-      await collection.updateOne(
-        { sessionId },
-        {
-          $set: {
-            pdfBlobUrl,
-            pdfGeneratedAt: now,
-          },
+    await collection.updateOne(
+      { sessionId },
+      {
+        $set: {
+          pdfBase64,
+          pdfGeneratedAt: now,
         },
-        { upsert: false },
-      );
-    }
+      },
+      { upsert: false },
+    );
 
-    return res.status(200).json({ ok: true, pdfBlobUrl });
+    return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[pdf-api] Error generating PDF', err);
     return res.status(200).json({ ok: false, error: 'pdf_generation_failed' });
