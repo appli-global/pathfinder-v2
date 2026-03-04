@@ -88,15 +88,17 @@ export default async function handler(req: any, res: any) {
 
   const now = new Date();
   // Store PDFs under the pf-reports/reports/ prefix in Blob storage
-  const blobKey = `pf-reports/reports/${sessionId}-${now.toISOString()}.pdf`;
+  // Use .pdf.b64 to indicate this is a base64-encoded PDF
+  const blobKey = `pf-reports/reports/${sessionId}-${now.toISOString()}.pdf.b64`;
+
+    // Convert the PDF buffer to a base64 string so content length is trivial
+    const pdfBase64 = pdfBuffer.toString('base64');
 
     let pdfBlobUrl: string | null = null;
     try {
-  // Wrap the Node Buffer in a Blob so the SDK can infer content length
-  const pdfBlob = new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' });
-
-      const { url } = await put(blobKey, pdfBlob, {
+      const { url } = await put(blobKey, pdfBase64, {
         access: 'public',
+        contentType: 'text/plain',
       });
 
       pdfBlobUrl = url;
