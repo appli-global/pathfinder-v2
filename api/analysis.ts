@@ -64,8 +64,13 @@ export default async function handler(req: any, res: any) {
     let blobUrl: string | null = null;
     try {
       const blobKey = `analysis/${sessionId}-${now.toISOString()}.json`;
-      const { url } = await put(blobKey, JSON.stringify(analysis, null, 2), {
-        access: 'private',
+      const jsonString = JSON.stringify(analysis, null, 2);
+
+      // Wrap JSON string in a Blob so the SDK can infer content length
+      const jsonBlob = new Blob([jsonString], { type: 'application/json' });
+
+      const { url } = await put(blobKey, jsonBlob, {
+        access: 'public',
       });
       blobUrl = url;
       console.log('[analysis-api] Stored analysis blob', { sessionId, blobKey, url });
