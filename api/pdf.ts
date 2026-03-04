@@ -92,13 +92,14 @@ export default async function handler(req: any, res: any) {
 
     let pdfBlobUrl: string | null = null;
     try {
-      const { url } = await put(blobKey, pdfBuffer, {
+    const { url } = await put(blobKey, pdfBuffer, {
         access: 'public',
-      });
-      pdfBlobUrl = url;
-      console.log('[pdf-api] Stored PDF blob', { sessionId, blobKey, url });
+        contentType: 'application/pdf',
+    });
+    pdfBlobUrl = url;
+    console.log('[pdf-api] Stored PDF blob', { sessionId, blobKey, url });
     } catch (blobErr) {
-      console.warn('[pdf-api] Failed to store PDF blob', blobErr);
+    console.warn('[pdf-api] Failed to store PDF blob', blobErr);
     }
 
     if (pdfBlobUrl) {
