@@ -283,6 +283,23 @@ export const ResultsPage: React.FC = () => {
                                 .catch((err) => {
                                     console.warn('[analysis-client] Failed to log full analysis', err);
                                 });
+
+                            // Silently trigger backend PDF generation & storage (fire-and-forget)
+                            fetch('/api/pdf', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    sessionId: finalSessionId,
+                                    level,
+                                    analysis: wrappedAnalysis,
+                                }),
+                            })
+                                .then(() => {
+                                    console.debug('[pdf-client] Triggered backend PDF generation', { sessionId: finalSessionId });
+                                })
+                                .catch((err) => {
+                                    console.warn('[pdf-client] Failed to trigger backend PDF generation', err);
+                                });
                         } catch (err) {
                             console.warn('Failed to start session logging (analyzed stage / analysis)', err);
                         }
