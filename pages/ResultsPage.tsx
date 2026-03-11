@@ -403,7 +403,7 @@ export const ResultsPage: React.FC = () => {
         <div className="min-h-screen bg-white text-slate-900 font-sans">
             <header className="mx-auto px-6 py-6 flex items-center justify-between max-w-7xl">
                 <div className="flex items-center gap-2 cursor-pointer" onClick={handleRestart}>
-                    <img src="/appli-logo.png" alt="Appli Logo" className="h-8" />
+                    <img src="/appli-logo.svg" alt="Appli Logo" className="h-8" />
                 </div>
             </header>
 

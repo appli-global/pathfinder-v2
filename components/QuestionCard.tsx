@@ -9,9 +9,10 @@ interface QuestionCardProps {
   totalSteps: number;
   allQuestions: Question[];
   subjectPool?: string[]; // Pre-filtered list for single-pick favourite subject question
+  answers?: Record<number, string>;
 }
 
-export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, onBack, currentStep, totalSteps, allQuestions, subjectPool }) => {
+export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, onBack, currentStep, totalSteps, allQuestions, subjectPool, answers }) => {
   // Sanitization utility to prevent XSS and CSV injection
   function sanitizeInput(input: string): string {
     // Remove leading =, +, -, @ (CSV injection)
@@ -125,8 +126,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
     'Informatics Practices',
   ]);
 
-  // Pick the right subject groups for this question
-  const SUBJECT_GROUPS = question.id === 14 ? SUBJECT_GROUPS_12 : SUBJECT_GROUPS_10;
+  // Pick the right subject groups conditional on user's highest qualification
+  const SUBJECT_GROUPS = question.id === 15 && (answers?.[11] === '11th Grade' || answers?.[11] === '12th Grade')
+    ? SUBJECT_GROUPS_12
+    : SUBJECT_GROUPS_10;
 
   return (
     <div className="w-full max-w-3xl mx-auto animate-fade-in-up pt-6">
@@ -169,7 +172,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                   </div>
                   {/* Other input for Q1 single-select */}
                   <div className="mt-5">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Enter your choice</p>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Can't find your choice, enter your choice.</p>
                     <div className="flex gap-2 items-center">
                       <input
                         type="text"
@@ -182,7 +185,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                             onAnswer(predefinedMatch || val);
                           }
                         }}
-                        placeholder="Type a subject and press Enter…"
+                        placeholder="Type your choice and press Enter…"
                         className="flex-1 px-4 py-2.5 rounded-full text-sm border-2 border-slate-200 bg-white text-slate-700 placeholder-slate-400 focus:border-[#ED1164] focus:outline-none focus:ring-2 focus:ring-[#ED1164]/20 transition-all"
                       />
                       <button
@@ -204,7 +207,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
               ) : (
                 // Multi-select or fallback full grouped list
                 <div className="space-y-5">
-                  {(question.id === 14 ? SUBJECT_GROUPS_12 : SUBJECT_GROUPS_10).map((group) => (
+                  {SUBJECT_GROUPS.map((group) => (
                     <div key={group.label}>
                       <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">{group.label}</p>
                       <div className="flex flex-wrap gap-2">
@@ -243,7 +246,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                 <>
                   {/* "Other" custom subject input */}
                   <div className="mt-5">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Enter your choice</p>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Can't find your choice, enter your choice.</p>
                     <div className="flex gap-2 items-center">
                       <input
                         type="text"
@@ -260,7 +263,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                             setOtherInputValue('');
                           }
                         }}
-                        placeholder="Type a subject and press Enter…"
+                        placeholder="Type your choice and press Enter…"
                         className="flex-1 px-4 py-2.5 rounded-full text-sm border-2 border-slate-200 bg-white text-slate-700 placeholder-slate-400 focus:border-[#ED1164] focus:outline-none focus:ring-2 focus:ring-[#ED1164]/20 transition-all"
                       />
                       <button
@@ -309,12 +312,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onAnswer, 
                   {/* Continue button */}
                   <button
                     onClick={() => {
-                      if (selectedSubjects.length > 0) onAnswer(selectedSubjects.join(', '));
+                      if (selectedSubjects.length >= 3) onAnswer(selectedSubjects.join(', '));
                     }}
-                    disabled={selectedSubjects.length === 0}
+                    disabled={selectedSubjects.length < 3}
                     className="mt-6 w-full bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-pink-500/20 hover:-translate-y-0.5 flex items-center justify-center gap-2 group"
                   >
-                    <span>Continue</span>
+                    <span>{selectedSubjects.length < 3 ? `Select ${3 - selectedSubjects.length} more` : 'Continue'}</span>
                     <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>

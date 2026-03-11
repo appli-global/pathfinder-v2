@@ -21,58 +21,20 @@ export const SKILL_COLUMNS = [
 export const QUESTIONS_12TH: Question[] = [
   {
     id: 100,
-    text: "What is your full name?",
+    text: "Let's start with your name so we can personalise your report.",
     inputType: 'text',
     placeholder: "e.g. Alex Johnson",
     options: []
   },
-  // --- Section 1: Academic Background ---
-  {
-    id: 11,
-    text: "What was your Class 10 percentage?",
-    subtext: "",
-    inputType: 'numeric_score',
-    sectionTitle: "Section 1: Academic Background",
-    sectionIntro: "Hey {{name}}, Let's start with your academics.",
-    options: []
-  },
-  {
-    id: 15,
-    text: "Which subjects were you strongest in during Class 10?",
-    subtext: "Select all that apply.",
-    inputType: 'subject_picker',
-    options: []
-  },
-  {
-    id: 9,
-    text: "What is your Class 12 percentage (boards or pre-boards), or expected percentage?",
-    subtext: "",
-    inputType: 'numeric_score',
-    options: []
-  },
-  {
-    id: 14,
-    text: "Which subjects have you consistently felt strongest in during Class 12?",
-    subtext: "Select all that apply.",
-    inputType: 'subject_picker',
-    options: []
-  },
-  {
-    id: 1,
-    text: "If you had to pick just one subject that feels most natural to you, one where things just click, which would it be?",
-    subtext: "Pick one.",
-    inputType: 'subject_picker_single',
-    options: []
-  },
-  // --- Section 2: How You Think and Work ---
+  // --- Section 1: How You Think and Work ---
   {
     id: 2,
     text: "Outside of academics, what do you find yourself spending time on?",
     subtext: "",
     inputType: 'text',
     placeholder: "e.g., coding, reading, sports, music, hanging out with friends",
-    sectionTitle: "Section 2: How You Think and Work",
-    sectionIntro: "Thanks {{Name}}. Grades only tell part of the story. Let's understand how you naturally think and what you actually enjoy doing.",
+    sectionTitle: "Section 1: How You Think and Work",
+    sectionIntro: "Hey {{name}}, let's start by understanding how you naturally think and what you actually enjoy doing.",
     options: []
   },
   {
@@ -108,13 +70,13 @@ export const QUESTIONS_12TH: Question[] = [
       { label: "Outdoors or traveling to new places.", value: "Fieldwork/Outdoors" }
     ]
   },
-  // --- Section 3: Where You're Headed ---
+  // --- Section 2: Where You're Headed ---
   {
     id: 3,
     text: "What kind of work genuinely appeals to you?",
     inputType: 'choice',
-    sectionTitle: "Section 3: Where You're Headed",
-    sectionIntro: "Almost there {{name}}. Now the bigger picture. No right answers, just honest ones.",
+    sectionTitle: "Section 2: Where You're Headed",
+    sectionIntro: "Great {{name}}. Now let's look at where you want to go. No right answers, just honest ones.",
     options: [
       { label: "Solving a complex data puzzle.", value: "Data Puzzle" },
       { label: "Designing a creative presentation or product.", value: "Creative Design" },
@@ -149,6 +111,35 @@ export const QUESTIONS_12TH: Question[] = [
     placeholder: "e.g., B.Tech in CS, Psychology, Law, Design",
     options: []
   },
+  // --- Section 3: Academic Background ---
+  {
+    id: 11,
+    text: "What is your highest or latest qualification?",
+    subtext: "Select your current or most recently completed grade.",
+    inputType: 'choice',
+    sectionTitle: "Section 3: Academic Background",
+    sectionIntro: "Almost there {{name}}. Let's wrap up with your academics.",
+    options: [
+      { label: "Class 9", value: "9th Grade" },
+      { label: "Class 10", value: "10th Grade" },
+      { label: "Class 11", value: "11th Grade" },
+      { label: "Class 12", value: "12th Grade" }
+    ]
+  },
+  {
+    id: 15,
+    text: "Which subjects have you consistently felt strongest in during your latest qualification?",
+    subtext: "Select at least 3.",
+    inputType: 'subject_picker',
+    options: []
+  },
+  {
+    id: 1,
+    text: "If you had to pick just one subject that feels most natural to you, one where things just click, which would it be?",
+    subtext: "Pick one.",
+    inputType: 'subject_picker_single',
+    options: []
+  },
   {
     id: 13,
     text: "Final Step: Generate Your Report",
@@ -159,6 +150,7 @@ export const QUESTIONS_12TH: Question[] = [
     options: []
   }
 ];
+
 
 export const QUESTIONS_UG: Question[] = [
   {
