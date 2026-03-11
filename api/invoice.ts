@@ -214,10 +214,8 @@ async function sendInvoiceViaWati(args: {
       console.warn('[invoice-api] No phone number for WATI send');
       return;
     }
-
-    const url = `${WATI_BASE_URL.replace(/\/$/, '')}/api/v1/sendTemplateMessage?whatsappNumber=${encodeURIComponent(
-      phone,
-    )}`;
+    const baseUrl = WATI_BASE_URL.replace(/\/$/, '');
+    const url = `${baseUrl}/api/v1/sendTemplateMessage?whatsappNumber=${encodeURIComponent(phone)}`;
 
     const amountStr = grossAmount.toFixed(2);
     const name = billing.name || 'there';
@@ -243,6 +241,14 @@ async function sendInvoiceViaWati(args: {
     if (WATI_SENDER_WHATSAPP) {
       (payload as any).whatsappNumber = WATI_SENDER_WHATSAPP;
     }
+
+    console.log('[invoice-api] WATI request', {
+      url,
+      phone,
+      template: WATI_TEMPLATE_NAME,
+      hasApiKey: !!WATI_API_KEY,
+      payload,
+    });
 
     const resp = await fetch(url, {
       method: 'POST',
