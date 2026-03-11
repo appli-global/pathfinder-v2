@@ -43,6 +43,13 @@ export const QuizPage: React.FC = () => {
                     const saved = localStorage.getItem('pathfinder_quiz_state');
                     const state = saved ? JSON.parse(saved) : {};
 
+                    // Razorpay may return contact/email depending on your
+                    // Checkout configuration. We prefer Razorpay's contact
+                    // for WhatsApp billing phone when available.
+                    const razorpayContact = (response && (response.contact || response.razorpay_contact)) ||
+                        state.billing?.phone ||
+                        '';
+
                     const updated = {
                         ...state,
                         payment: {
@@ -51,6 +58,11 @@ export const QuizPage: React.FC = () => {
                             orderId: response.razorpay_order_id,
                             signature: response.razorpay_signature,
                             timestamp: Date.now(),
+                        },
+                        billing: {
+                            ...(state.billing || {}),
+                            name: state.answers?.[100] || state.billing?.name || '',
+                            phone: razorpayContact,
                         },
                     };
 
@@ -68,7 +80,7 @@ export const QuizPage: React.FC = () => {
                                 payment: updated.payment,
                                 billing: updated.billing || {
                                     name: updated.answers?.[100] || '',
-                                    phone: '',
+                                    phone: razorpayContact,
                                 },
                                 amount: amountInPaise,
                                 currency: 'INR',
