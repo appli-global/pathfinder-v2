@@ -56,6 +56,33 @@ export const QuizPage: React.FC = () => {
 
                     localStorage.setItem('pathfinder_quiz_state', JSON.stringify(updated));
                     console.debug('[payment-client] Stored Razorpay payment info', updated.payment);
+
+                    // Fire-and-forget invoice generation
+                    try {
+                        fetch('/api/invoice', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: updated.sessionId,
+                                level: updated.level,
+                                payment: updated.payment,
+                                billing: updated.billing || {
+                                    name: updated.answers?.[100] || '',
+                                    phone: '',
+                                },
+                                amount: amountInPaise,
+                                currency: 'INR',
+                            }),
+                        })
+                            .then(() => {
+                                console.debug('[invoice-client] Triggered invoice generation', { sessionId: updated.sessionId });
+                            })
+                            .catch((err) => {
+                                console.warn('[invoice-client] Failed to trigger invoice generation', err);
+                            });
+                    } catch (err) {
+                        console.warn('[invoice-client] Error while calling invoice API', err);
+                    }
                 } catch (e) {
                     console.error('[payment-client] Failed to attach payment info to quiz state', e);
                 }
