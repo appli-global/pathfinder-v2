@@ -247,18 +247,33 @@ export const QuizPage: React.FC = () => {
                     </div>
 
                     {/* ── Hero text ── */}
-                    <div className="text-center mb-12 animate-fade-in-up delay-100">
+                    <div className="text-center mb-8 animate-fade-in-up delay-100">
                         <div className="inline-flex items-center gap-2 bg-pink-50 border border-pink-100 text-[#ED1164] text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#ED1164] animate-pulse-dot inline-block" />
-                            Career Discovery Assessment
+                            <span>Career Discovery Assessment <span className="mx-1 opacity-50">|</span> <span className="normal-case tracking-normal text-[13px]">at ₹499 only</span></span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-3">
                             Your Journey to the<br />
                             <span className="shimmer-text">Perfect Career</span>
                         </h1>
-                        <p className="text-slate-500 text-base max-w-sm mx-auto leading-relaxed">
+                        <p className="text-slate-500 text-base max-w-sm mx-auto leading-relaxed mb-8">
                             Follow the path — 3 short sections, one powerful result.
                         </p>
+
+                        {/* ── CTA ── */}
+                        <div className="flex flex-col items-center gap-3 animate-fade-in-up delay-200">
+                            <button
+                                onClick={handleStart}
+                                className="w-full max-w-xs bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 shadow-xl shadow-pink-300/40 hover:-translate-y-1 hover:shadow-pink-400/60 flex items-center justify-center gap-3 text-lg group animate-float-scale"
+                            >
+                                <span>Begin Your Journey</span>
+                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                            {error && <p className="text-red-600 text-xs bg-red-50 px-3 py-2 rounded border border-red-100">{error}</p>}
+                            <p className="text-xs text-slate-400">No sign-up required · Results in minutes</p>
+                        </div>
                     </div>
 
                     {/* ── Pathway ── */}
@@ -294,7 +309,7 @@ export const QuizPage: React.FC = () => {
                             */}
                             <path
                                 d="M 50 4
-                                   C 80 4 83 12 83 24
+                                   C 50 12 83 12 83 24
                                    C 83 37 17 37 17 50
                                    C 17 63 83 63 83 76
                                    C 83 88 50 90 50 96"
@@ -309,87 +324,75 @@ export const QuizPage: React.FC = () => {
 
                         {/* ── START node — top centre (50%, 4%) ── */}
                         <div
-                            className="absolute z-10 flex flex-col items-center gap-1 animate-scale-in delay-200"
-                            style={{ left: '50%', top: '4%', transform: 'translate(-50%, -50%)' }}
+                            className="absolute z-10"
+                            style={{ left: '50%', top: '4%', transform: 'translate(-50%, -18px)' }}
                         >
-                            <div className="w-9 h-9 rounded-full bg-white border-2 border-[#ED1164] shadow-lg shadow-pink-200/60 flex items-center justify-center text-[#ED1164] font-bold">
-                                ★
+                            <div className="flex flex-col items-center gap-1 animate-scale-in delay-200">
+                                <div className="w-9 h-9 rounded-full bg-white border-2 border-[#ED1164] shadow-lg shadow-pink-200/60 flex items-center justify-center text-[#ED1164] font-bold">
+                                    ★
+                                </div>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-[#ED1164]">Start</span>
                             </div>
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-[#ED1164]">Start</span>
                         </div>
 
                         {/* ── Checkpoint 01 ── */}
                         <div
-                            className="absolute z-10 w-0 h-0"
-                            style={{ left: '83%', top: '24%' }}
+                            className="absolute z-10"
+                            style={{ left: '83%', top: '24%', transform: 'translate(-50%, -50%)' }}
                         >
                             <div
-                                className="absolute w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
+                                className="absolute top-1/2 left-1/2 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
                                 style={{ background: 'linear-gradient(135deg,#7C3AED,#7C3AEDaa)', boxShadow: '0 4px 18px #7C3AED40' }}
                             >01</div>
                             <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center w-[160px] md:w-[220px] pointer-events-none animate-fade-in-up delay-300">
-                                <img src="/Shrug-rafiki.svg" alt="Clueless" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply" />
+                                <img src="/Shrug-rafiki.svg" alt="Clueless" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply animate-float delay-100" />
                                 <span className="font-bold text-slate-800 text-sm md:text-lg leading-tight bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-slate-100 pointer-events-auto text-center mt-[-15px] z-30">Clueless</span>
                             </div>
                         </div>
 
                         {/* ── Checkpoint 02 ── */}
                         <div
-                            className="absolute z-10 w-0 h-0"
-                            style={{ left: '17%', top: '50%' }}
+                            className="absolute z-10"
+                            style={{ left: '17%', top: '50%', transform: 'translate(-50%, -50%)' }}
                         >
                             <div
-                                className="absolute w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
+                                className="absolute top-1/2 left-1/2 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
                                 style={{ background: 'linear-gradient(135deg,#0EA5E9,#0EA5E9aa)', boxShadow: '0 4px 18px #0EA5E940' }}
                             >02</div>
                             <div className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 flex flex-col items-center w-[160px] md:w-[220px] pointer-events-none animate-fade-in-up delay-500">
-                                <img src="/Choose-rafiki.svg" alt="Customizing" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply" />
+                                <img src="/Choose-rafiki.svg" alt="Customizing" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply animate-float delay-300" />
                                 <span className="font-bold text-slate-800 text-sm md:text-lg leading-tight bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-slate-100 pointer-events-auto text-center mt-[-15px] z-30">Customizing</span>
                             </div>
                         </div>
 
                         {/* ── Checkpoint 03 ── */}
                         <div
-                            className="absolute z-10 w-0 h-0"
-                            style={{ left: '83%', top: '76%' }}
+                            className="absolute z-10"
+                            style={{ left: '83%', top: '76%', transform: 'translate(-50%, -50%)' }}
                         >
                             <div
-                                className="absolute w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
+                                className="absolute top-1/2 left-1/2 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-lg hover:scale-110 transition-transform -translate-x-1/2 -translate-y-1/2 z-20"
                                 style={{ background: 'linear-gradient(135deg,#ED1164,#ED1164aa)', boxShadow: '0 4px 18px #ED116440' }}
                             >03</div>
                             <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center w-[160px] md:w-[220px] pointer-events-none animate-fade-in-up delay-700">
-                                <img src="/Statistics-rafiki.svg" alt="Clarity" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply" />
+                                <img src="/Statistics-rafiki.svg" alt="Clarity" className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-md pointer-events-auto mix-blend-multiply animate-float delay-500" />
                                 <span className="font-bold text-slate-800 text-sm md:text-lg leading-tight bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm border border-slate-100 pointer-events-auto text-center mt-[-15px] z-30">Clarity</span>
                             </div>
                         </div>
 
                         {/* ── FINISH node — bottom centre (50%, 96%) ── */}
                         <div
-                            className="absolute z-10 flex flex-col items-center gap-1.5 animate-scale-in delay-800"
-                            style={{ left: '50%', top: '96%', transform: 'translate(-50%, -50%)' }}
+                            className="absolute z-10"
+                            style={{ left: '50%', top: '96%', transform: 'translate(-50%, -28px)' }}
                         >
-                            <div className="relative">
-                                <div className="absolute inset-0 rounded-full blur-md opacity-50 animate-pulse" style={{ background: '#ED1164' }} />
-                                <div className="relative w-14 h-14 rounded-full bg-[#ED1164] flex items-center justify-center shadow-2xl shadow-pink-400/50 text-white text-xl">✦</div>
+                            <div className="flex flex-col items-center gap-2 animate-scale-in delay-800">
+                                <div className="relative">
+                                    <div className="absolute inset-0 rounded-full blur-md opacity-50 animate-pulse" style={{ background: '#ED1164' }} />
+                                    <div className="relative w-14 h-14 rounded-full bg-[#ED1164] flex items-center justify-center shadow-2xl shadow-pink-400/50 text-white text-xl">✦</div>
+                                </div>
+                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#ED1164]">Your Results</p>
                             </div>
-                            <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#ED1164]">Your Results</p>
                         </div>
-                    </div>
-
-
-                    {/* ── CTA ── */}
-                    <div className="flex flex-col items-center gap-3 animate-scale-in delay-800">
-                        <button
-                            onClick={handleStart}
-                            className="w-full max-w-xs bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 shadow-xl shadow-pink-300/40 hover:-translate-y-1 hover:shadow-pink-400/60 flex items-center justify-center gap-3 text-lg group"
-                        >
-                            <span>Begin Your Journey</span>
-                            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </button>
-                        {error && <p className="text-red-600 text-xs bg-red-50 px-3 py-2 rounded border border-red-100">{error}</p>}
-                        <p className="text-xs text-slate-400">No sign-up required · Results in minutes</p>
                     </div>
 
                 </div>
