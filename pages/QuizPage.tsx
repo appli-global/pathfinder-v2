@@ -39,6 +39,7 @@ export const QuizPage: React.FC = () => {
             name: 'Appli Pathfinder Report',
             description: 'Personalized career report and analysis',
             handler: (response: any) => {
+                console.debug('[payment-client] Razorpay handler response', response);
                 try {
                     const saved = localStorage.getItem('pathfinder_quiz_state');
                     const state = saved ? JSON.parse(saved) : {};
