@@ -24,6 +24,10 @@ const WATI_API_KEY = process.env.WATI_API_KEY;
 const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification';
 const WATI_SENDER_WHATSAPP = process.env.WATI_SENDER_WHATSAPP || undefined;
 
+// Razorpay server-side credentials for payment lookup
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+
 function amountToWords(amount: number): string {
   // Simple placeholder; for now just return numeric string.
   // You can replace with a full number-to-words implementation later.
@@ -51,6 +55,45 @@ interface InvoiceRequestBody {
   };
   amount: number; // in paise
   currency: string; // e.g. 'INR'
+}
+
+async function fetchRazorpayPaymentContact(paymentId?: string): Promise<string | null> {
+  try {
+    if (!paymentId) return null;
+    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      console.warn('[invoice-api] Razorpay credentials missing, cannot look up payment contact');
+      return null;
+    }
+
+    const auth = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');
+    const url = `https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`;
+
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${auth}`,
+      },
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.warn('[invoice-api] Razorpay payment lookup failed', resp.status, text);
+      return null;
+    }
+
+    const data: any = await resp.json();
+    // Common Razorpay payment shape: contact may live at data.contact
+    const contact: string | undefined = data.contact || data.notes?.contact || data.notes?.phone;
+    if (!contact) {
+      console.warn('[invoice-api] Razorpay payment has no contact field', { paymentId });
+      return null;
+    }
+
+    return contact;
+  } catch (err) {
+    console.warn('[invoice-api] Error fetching Razorpay payment contact', err);
+    return null;
+  }
 }
 
 function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Buffer {
@@ -244,6 +287,18 @@ export default async function handler(req: any, res: any) {
 
     const db = client.db(dbName);
     const collection = db.collection('pathfinder_analysis_result');
+
+    // If phone is missing in billing, try fetching it from Razorpay
+    if (!billing.phone && payment?.paymentId) {
+      const contact = await fetchRazorpayPaymentContact(payment.paymentId);
+      if (contact) {
+        billing.phone = String(contact);
+        console.log('[invoice-api] Enriched billing.phone from Razorpay', {
+          sessionId,
+          paymentId: payment.paymentId,
+        });
+      }
+    }
 
     const now = Date.now();
     const invoiceNumber = `PFINV-${now}`;
