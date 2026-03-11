@@ -19,6 +19,12 @@ async function getClient() {
   return cachedClient;
 }
 
+// Basic WATI configuration from environment
+const WATI_BASE_URL = process.env.WATI_BASE_URL;
+const WATI_API_KEY = process.env.WATI_API_KEY;
+const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification';
+const WATI_SENDER_WHATSAPP = process.env.WATI_SENDER_WHATSAPP || undefined;
+
 function amountToWords(amount: number): string {
   // Simple placeholder; for now just return numeric string.
   // You can replace with a full number-to-words implementation later.
@@ -148,6 +154,75 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Buff
   return Buffer.concat(chunks);
 }
 
+async function sendInvoiceViaWati(args: {
+  billing: InvoiceRequestBody['billing'];
+  invoiceNumber: string;
+  invoiceUrl: string | null;
+  grossAmount: number;
+}) {
+  try {
+    if (!WATI_BASE_URL || !WATI_API_KEY) {
+      console.warn('[invoice-api] WATI env vars missing, skipping WhatsApp notification');
+      return;
+    }
+
+    const { billing, invoiceNumber, invoiceUrl, grossAmount } = args;
+    const phone = (billing.phone || '').replace(/\D/g, '');
+    if (!phone) {
+      console.warn('[invoice-api] No phone number for WATI send');
+      return;
+    }
+
+    const url = `${WATI_BASE_URL.replace(/\/$/, '')}/api/v1/sendTemplateMessage?whatsappNumber=${encodeURIComponent(
+      phone,
+    )}`;
+
+    const amountStr = grossAmount.toFixed(2);
+    const name = billing.name || 'there';
+
+    const components: any[] = [
+      {
+        type: 'body',
+        parameters: [
+          { type: 'text', text: name },
+          { type: 'text', text: invoiceNumber },
+          { type: 'text', text: amountStr },
+          { type: 'text', text: invoiceUrl || '-' },
+        ],
+      },
+    ];
+
+    const payload: any = {
+      template_name: WATI_TEMPLATE_NAME,
+      broadcast_name: 'Pathfinder Invoice',
+      parameters: components,
+    };
+
+    if (WATI_SENDER_WHATSAPP) {
+      (payload as any).whatsappNumber = WATI_SENDER_WHATSAPP;
+    }
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${WATI_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.warn('[invoice-api] WATI send failed', resp.status, text);
+      return;
+    }
+
+    console.log('[invoice-api] WATI invoice notification sent', { phone, invoiceNumber });
+  } catch (err) {
+    console.warn('[invoice-api] Error while sending WATI notification', err);
+  }
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -174,10 +249,10 @@ export default async function handler(req: any, res: any) {
     const now = Date.now();
     const invoiceNumber = `PFINV-${now}`;
 
-    const pdfBuffer = createInvoicePdf(invoiceNumber, body);
+  const pdfBuffer = createInvoicePdf(invoiceNumber, body);
 
     // Upload invoice PDF to Vercel Blob
-    let invoiceBlobUrl: string | null = null;
+  let invoiceBlobUrl: string | null = null;
     try {
       const blobKey = `invoices/${sessionId}-${invoiceNumber}.pdf`;
       const { url } = await put(blobKey, pdfBuffer, {
@@ -204,6 +279,13 @@ export default async function handler(req: any, res: any) {
       },
       { upsert: false },
     );
+
+    // Fire-and-forget WhatsApp notification via WATI; do not block response on this
+    const grossAmount = amount / 100;
+    // Intentionally not awaited to keep API snappy
+    sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: invoiceBlobUrl, grossAmount }).catch((err) => {
+      console.warn('[invoice-api] WATI send threw error', err);
+    });
 
     return res.status(200).json({ ok: true, invoiceNumber, invoiceBlobUrl });
   } catch (err) {
