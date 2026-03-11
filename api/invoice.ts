@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 import PDFDocument from 'pdfkit';
-import { put } from '@vercel/blob';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -249,21 +248,14 @@ export default async function handler(req: any, res: any) {
     const now = Date.now();
     const invoiceNumber = `PFINV-${now}`;
 
-  const pdfBuffer = createInvoicePdf(invoiceNumber, body);
+    const pdfBuffer = createInvoicePdf(invoiceNumber, body);
 
-    // Upload invoice PDF to Vercel Blob
-  let invoiceBlobUrl: string | null = null;
-    try {
-      const blobKey = `invoices/${sessionId}-${invoiceNumber}.pdf`;
-      const { url } = await put(blobKey, pdfBuffer, {
-        access: 'public',
-        contentType: 'application/pdf',
-      });
-      invoiceBlobUrl = url;
-      console.log('[invoice-api] Stored invoice blob', { sessionId, blobKey, url });
-    } catch (blobErr) {
-      console.warn('[invoice-api] Failed to store invoice blob', blobErr);
-    }
+    // NOTE: We previously tried to upload invoice PDFs to Vercel Blob, but
+    // the runtime requires a content-length header which is tricky to set
+    // correctly in this environment. To keep the API reliable, we now
+    // avoid Blob for invoices and instead only store metadata + optionally
+    // a base64 copy in Mongo in the future.
+    const invoiceBlobUrl: string | null = null;
 
     // Store invoice metadata in Mongo
     await collection.updateOne(
@@ -282,7 +274,10 @@ export default async function handler(req: any, res: any) {
 
     // Fire-and-forget WhatsApp notification via WATI; do not block response on this
     const grossAmount = amount / 100;
-    // Intentionally not awaited to keep API snappy
+    // Intentionally not awaited to keep API snappy. We currently don't
+    // have a public URL for the invoice PDF, so we pass null for
+    // invoiceUrl – adjust the WATI template to avoid relying on a link
+    // until a stable hosting mechanism is added.
     sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: invoiceBlobUrl, grossAmount }).catch((err) => {
       console.warn('[invoice-api] WATI send threw error', err);
     });
