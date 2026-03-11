@@ -23,6 +23,58 @@ export const QuizPage: React.FC = () => {
 
     const activeQuestions = selectedLevel === '12' ? QUESTIONS_12TH : QUESTIONS_UG;
 
+    const startRazorpayPayment = () => {
+        const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
+        if (!key) {
+            alert('Payment configuration is missing. Please contact support.');
+            return;
+        }
+
+        const amountInPaise = 49900; // ₹499.00
+
+        const options: any = {
+            key,
+            amount: amountInPaise,
+            currency: 'INR',
+            name: 'Appli Pathfinder Report',
+            description: 'Personalized career report and analysis',
+            handler: (response: any) => {
+                try {
+                    const saved = localStorage.getItem('pathfinder_quiz_state');
+                    const state = saved ? JSON.parse(saved) : {};
+
+                    const updated = {
+                        ...state,
+                        payment: {
+                            provider: 'razorpay',
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            timestamp: Date.now(),
+                        },
+                    };
+
+                    localStorage.setItem('pathfinder_quiz_state', JSON.stringify(updated));
+                    console.debug('[payment-client] Stored Razorpay payment info', updated.payment);
+                } catch (e) {
+                    console.error('[payment-client] Failed to attach payment info to quiz state', e);
+                }
+
+                navigate('/results?success=true');
+            },
+            prefill: {
+                name: answers[100] || '',
+            },
+            theme: {
+                color: '#ED1164',
+            },
+        };
+
+        // @ts-ignore
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+    };
+
     const handleStart = () => {
         const newSessionId = createSessionId();
         setSessionId(newSessionId);
@@ -92,11 +144,8 @@ export const QuizPage: React.FC = () => {
             } catch (err) {
                 console.warn('Failed to start session logging (completed stage)', err);
             }
-            if (currentQuestion.paymentLink) {
-                window.location.href = currentQuestion.paymentLink;
-            } else {
-                navigate('/results?success=true');
-            }
+            // After quiz completion, trigger Razorpay payment for the report
+            startRazorpayPayment();
         }
     };
 
