@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import PDFDocument from 'pdfkit';
+import { put } from '@vercel/blob';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -304,12 +305,22 @@ export default async function handler(req: any, res: any) {
 
     const pdfBuffer = createInvoicePdf(invoiceNumber, body);
 
-    // NOTE: We previously tried to upload invoice PDFs to Vercel Blob, but
-    // the runtime requires a content-length header which is tricky to set
-    // correctly in this environment. To keep the API reliable, we now
-    // avoid Blob for invoices and instead only store metadata + optionally
-    // a base64 copy in Mongo in the future.
-    const invoiceBlobUrl: string | null = null;
+    // Upload the invoice PDF to Vercel Blob so that we have a stable public URL
+    // which can be shared via WhatsApp/email. Any upload failure is logged but
+    // does not fail the overall invoice generation.
+    let invoiceBlobUrl: string | null = null;
+    try {
+      const blobName = `invoices/${invoiceNumber}.pdf`;
+      const result = await put(blobName, pdfBuffer, {
+        access: 'public',
+        contentType: 'application/pdf',
+      });
+      invoiceBlobUrl = result.url;
+      console.log('[invoice-api] Uploaded invoice PDF to Blob', { invoiceNumber, url: invoiceBlobUrl });
+    } catch (uploadErr) {
+      console.warn('[invoice-api] Failed to upload invoice PDF to Blob', uploadErr);
+      invoiceBlobUrl = null;
+    }
 
     // Store invoice metadata in Mongo
     await collection.updateOne(
@@ -328,10 +339,6 @@ export default async function handler(req: any, res: any) {
 
     // Fire-and-forget WhatsApp notification via WATI; do not block response on this
     const grossAmount = amount / 100;
-    // Intentionally not awaited to keep API snappy. We currently don't
-    // have a public URL for the invoice PDF, so we pass null for
-    // invoiceUrl – adjust the WATI template to avoid relying on a link
-    // until a stable hosting mechanism is added.
     sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: invoiceBlobUrl, grossAmount }).catch((err) => {
       console.warn('[invoice-api] WATI send threw error', err);
     });
