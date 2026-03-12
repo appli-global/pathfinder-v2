@@ -26,3 +26,4 @@ DB name required ///
 Wati implemented for invoices variable chagen
 PDF file via OTP
 BLOB storage issue fixed
+wati isseu 
