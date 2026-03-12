@@ -1,7 +1,5 @@
 import { MongoClient } from 'mongodb';
 import PDFDocument from 'pdfkit';
-import { Readable } from 'stream';
-import { put } from '@vercel/blob';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -306,26 +304,9 @@ export default async function handler(req: any, res: any) {
 
     const pdfBuffer = createInvoicePdf(invoiceNumber, body);
 
-    // Upload the invoice PDF to Vercel Blob so that we have a stable public URL
-    // which can be shared via WhatsApp/email. Any upload failure is logged but
-    // does not fail the overall invoice generation.
-    let invoiceBlobUrl: string | null = null;
-    try {
-      const blobName = `invoices/${invoiceNumber}.pdf`;
-      // Use a Node.js Readable stream from the Buffer; Vercel Blob can infer the
-      // content length from the stream and no explicit x-content-length header
-      // is required from our side.
-      const stream = Readable.from(pdfBuffer);
-      const result = await put(blobName, stream as any, {
-        access: 'public',
-        contentType: 'application/pdf',
-      } as any);
-      invoiceBlobUrl = result.url;
-      console.log('[invoice-api] Uploaded invoice PDF to Blob', { invoiceNumber, url: invoiceBlobUrl });
-    } catch (uploadErr) {
-      console.warn('[invoice-api] Failed to upload invoice PDF to Blob', uploadErr);
-      invoiceBlobUrl = null;
-    }
+    // Keep invoice generation fast; do not upload to Blob in this critical path.
+    // We can optionally have a separate endpoint/job that uploads PDFs later.
+    const invoiceBlobUrl: string | null = null;
 
     // Store invoice metadata in Mongo
     await collection.updateOne(
