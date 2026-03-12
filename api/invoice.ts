@@ -316,9 +316,6 @@ export default async function handler(req: any, res: any) {
 
   const pdfBuffer = await createInvoicePdf(invoiceNumber, body);
 
-  // Keep invoice generation fast; do not upload to Blob in this critical path.
-  // We store the PDF as base64 so a separate endpoint/job can upload it later.
-  const invoiceBlobUrl: string | null = null;
   const invoiceBase64 = pdfBuffer.toString('base64');
 
     // Store invoice metadata in Mongo. Use upsert so that even if the
@@ -329,7 +326,6 @@ export default async function handler(req: any, res: any) {
       {
         $set: {
           invoiceNumber,
-          invoiceBlobUrl,
           invoiceBase64,
           invoiceGeneratedAt: new Date(now),
           billing,
@@ -344,43 +340,44 @@ export default async function handler(req: any, res: any) {
       { upsert: true },
     );
 
-    // Fire-and-forget: upload invoice PDF to Blob and update Mongo with the URL.
-    // This runs async so we don't block the response on Blob upload latency.
-    (async () => {
-      try {
-        const { Readable } = await import('stream');
-        const { put } = await import('@vercel/blob');
-        const blobName = `invoices/${invoiceNumber}.pdf`;
-        const stream = Readable.from(pdfBuffer);
-        const result = await put(blobName, stream as any, {
-          access: 'public',
-          contentType: 'application/pdf',
-        } as any);
-        const uploadedUrl = result.url;
-        console.log('[invoice-api] Uploaded invoice PDF to Blob', { sessionId, invoiceNumber, url: uploadedUrl });
+    // Upload invoice PDF to Blob and update Mongo with the URL.
+    // We await this since Vercel functions terminate when response is sent.
+    let finalBlobUrl: string | null = null;
+    try {
+      const { Readable } = await import('stream');
+      const { put } = await import('@vercel/blob');
+      const blobName = `invoices/${invoiceNumber}.pdf`;
+      const stream = Readable.from(pdfBuffer);
+      const result = await put(blobName, stream as any, {
+        access: 'public',
+        contentType: 'application/pdf',
+      } as any);
+      finalBlobUrl = result.url;
+      console.log('[invoice-api] Uploaded invoice PDF to Blob', { sessionId, invoiceNumber, url: finalBlobUrl });
 
-        // Update Mongo with the Blob URL
-        await collection.updateOne(
-          { sessionId },
-          {
-            $set: {
-              invoiceBlobUrl: uploadedUrl,
-              invoiceBlobUploadedAt: new Date(),
-            },
+      // Update Mongo with the Blob URL
+      await collection.updateOne(
+        { sessionId },
+        {
+          $set: {
+            invoiceBlobUrl: finalBlobUrl,
+            invoiceBlobUploadedAt: new Date(),
           },
-        );
-      } catch (err) {
-        console.warn('[invoice-api] Failed to upload invoice PDF to Blob', err);
-      }
-    })();
+        },
+      );
+    } catch (err) {
+      console.warn('[invoice-api] Failed to upload invoice PDF to Blob', err);
+    }
 
-    // Fire-and-forget WhatsApp notification via WATI; do not block response on this
+    // Send WhatsApp notification via WATI - await to ensure we see the response logs
     const grossAmount = amount / 100;
-    sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: invoiceBlobUrl, grossAmount }).catch((err) => {
+    try {
+      await sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: finalBlobUrl, grossAmount });
+    } catch (err) {
       console.warn('[invoice-api] WATI send threw error', err);
-    });
+    }
 
-    return res.status(200).json({ ok: true, invoiceNumber, invoiceBlobUrl });
+    return res.status(200).json({ ok: true, invoiceNumber, invoiceBlobUrl: finalBlobUrl });
   } catch (err) {
     console.error('[invoice-api] Error generating invoice', err);
     return res.status(200).json({ ok: false, error: 'invoice_generation_failed' });
