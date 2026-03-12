@@ -299,14 +299,15 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    const now = Date.now();
-    const invoiceNumber = `PFINV-${now}`;
+  const now = Date.now();
+  const invoiceNumber = `PFINV-${now}`;
 
-    const pdfBuffer = createInvoicePdf(invoiceNumber, body);
+  const pdfBuffer = createInvoicePdf(invoiceNumber, body);
 
-    // Keep invoice generation fast; do not upload to Blob in this critical path.
-    // We can optionally have a separate endpoint/job that uploads PDFs later.
-    const invoiceBlobUrl: string | null = null;
+  // Keep invoice generation fast; do not upload to Blob in this critical path.
+  // We store the PDF as base64 so a separate endpoint/job can upload it later.
+  const invoiceBlobUrl: string | null = null;
+  const invoiceBase64 = pdfBuffer.toString('base64');
 
     // Store invoice metadata in Mongo
     await collection.updateOne(
@@ -315,6 +316,7 @@ export default async function handler(req: any, res: any) {
         $set: {
           invoiceNumber,
           invoiceBlobUrl,
+          invoiceBase64,
           invoiceGeneratedAt: new Date(now),
           billing,
           paymentSummary: payment,
