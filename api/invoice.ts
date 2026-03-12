@@ -215,7 +215,7 @@ async function sendInvoiceViaWati(args: {
       return;
     }
   const baseUrl = WATI_BASE_URL.replace(/\/$/, '');
-  const url = `${baseUrl}/api/v1/sendTemplateMessages`;
+  const url = `${baseUrl}/api/v2/sendTemplateMessages`;
 
     const amountStr = grossAmount.toFixed(2);
     const name = billing.name || 'there';
