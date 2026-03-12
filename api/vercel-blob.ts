@@ -8,8 +8,7 @@ if (!BLOB_TOKEN) {
   );
 }
 
-// Upload file
-export async function uploadBlob(filename: string, file: Buffer | Blob) {
+export async function uploadBlob(filename: string, file: Blob | Buffer) {
   if (!BLOB_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is missing");
   }
@@ -22,7 +21,6 @@ export async function uploadBlob(filename: string, file: Buffer | Blob) {
   return blob;
 }
 
-// Delete file
 export async function deleteBlob(url: string) {
   if (!BLOB_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is missing");
@@ -31,7 +29,6 @@ export async function deleteBlob(url: string) {
   await del(url, { token: BLOB_TOKEN });
 }
 
-// List files
 export async function listBlobs() {
   if (!BLOB_TOKEN) {
     throw new Error("BLOB_READ_WRITE_TOKEN is missing");
