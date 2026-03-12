@@ -338,6 +338,36 @@ export default async function handler(req: any, res: any) {
       { upsert: true },
     );
 
+    // Fire-and-forget: upload invoice PDF to Blob and update Mongo with the URL.
+    // This runs async so we don't block the response on Blob upload latency.
+    (async () => {
+      try {
+        const { Readable } = await import('stream');
+        const { put } = await import('@vercel/blob');
+        const blobName = `invoices/${invoiceNumber}.pdf`;
+        const stream = Readable.from(pdfBuffer);
+        const result = await put(blobName, stream as any, {
+          access: 'public',
+          contentType: 'application/pdf',
+        } as any);
+        const uploadedUrl = result.url;
+        console.log('[invoice-api] Uploaded invoice PDF to Blob', { sessionId, invoiceNumber, url: uploadedUrl });
+
+        // Update Mongo with the Blob URL
+        await collection.updateOne(
+          { sessionId },
+          {
+            $set: {
+              invoiceBlobUrl: uploadedUrl,
+              invoiceBlobUploadedAt: new Date(),
+            },
+          },
+        );
+      } catch (err) {
+        console.warn('[invoice-api] Failed to upload invoice PDF to Blob', err);
+      }
+    })();
+
     // Fire-and-forget WhatsApp notification via WATI; do not block response on this
     const grossAmount = amount / 100;
     sendInvoiceViaWati({ billing, invoiceNumber, invoiceUrl: invoiceBlobUrl, grossAmount }).catch((err) => {
