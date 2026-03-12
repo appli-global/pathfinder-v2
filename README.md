@@ -24,3 +24,4 @@ DB password witout string
 DB name required ///
 
 Wati implemented for invoices variable chagen
+PDF file via OTP
