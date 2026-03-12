@@ -311,10 +311,17 @@ export default async function handler(req: any, res: any) {
     let invoiceBlobUrl: string | null = null;
     try {
       const blobName = `invoices/${invoiceNumber}.pdf`;
-      const result = await put(blobName, pdfBuffer, {
+      // Vercel Blob requires a content-length header; using an ArrayBuffer body
+      // with an explicit contentLength satisfies this requirement.
+      const arrayBuffer = pdfBuffer.buffer.slice(
+        pdfBuffer.byteOffset,
+        pdfBuffer.byteOffset + pdfBuffer.byteLength,
+      );
+      const result = await put(blobName, arrayBuffer as any, {
         access: 'public',
         contentType: 'application/pdf',
-      });
+        contentLength: pdfBuffer.byteLength,
+      } as any);
       invoiceBlobUrl = result.url;
       console.log('[invoice-api] Uploaded invoice PDF to Blob', { invoiceNumber, url: invoiceBlobUrl });
     } catch (uploadErr) {
