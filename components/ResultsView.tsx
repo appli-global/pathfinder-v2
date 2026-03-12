@@ -82,6 +82,47 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
     setTimeout(() => {
       window.print();
     }, 100);
+
+    // Fire-and-forget: trigger backend PDF generation, Blob upload & WATI notification
+    try {
+      let sessionId: string | null = null;
+      let level: string | null = null;
+      let analysis: any = null;
+
+      // Try to read from saved analysis result first
+      const savedResult = localStorage.getItem('pathfinder_analysis_result');
+      if (savedResult) {
+        const parsed = JSON.parse(savedResult);
+        sessionId = parsed.sessionId || null;
+        analysis = parsed;
+      }
+
+      // Fall back to quiz state for sessionId/level
+      const quizState = localStorage.getItem('pathfinder_quiz_state');
+      if (quizState) {
+        const parsedState = JSON.parse(quizState);
+        if (!sessionId) sessionId = parsedState.sessionId || null;
+        if (!level) level = parsedState.level || null;
+      }
+
+      if (sessionId && level && analysis) {
+        fetch('/api/pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, level, analysis }),
+        })
+          .then(() => {
+            console.debug('[pdf-client] Triggered PDF Blob upload & WATI notification', { sessionId });
+          })
+          .catch((err) => {
+            console.warn('[pdf-client] Failed to trigger PDF Blob upload', err);
+          });
+      } else {
+        console.debug('[pdf-client] Skipping backend PDF trigger — missing sessionId/level/analysis');
+      }
+    } catch (err) {
+      console.warn('[pdf-client] Error reading localStorage for PDF trigger', err);
+    }
   };
 
   const handleInstagramShare = () => {
