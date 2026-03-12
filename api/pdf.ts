@@ -199,7 +199,8 @@ export default async function handler(req: any, res: any) {
       { upsert: false },
     );
 
-    // Send WATI notification if not already sent and we have a Blob URL
+    // Send WATI notification if not already sent and we have a Blob URL.
+    // IMPORTANT: Must await — Vercel kills serverless functions after res is sent.
     if (reportBlobUrl) {
       try {
         // Fetch the document to get billing info and check if already notified
@@ -208,25 +209,18 @@ export default async function handler(req: any, res: any) {
         const alreadyNotified = !!(doc as any)?.watiReportNotifiedAt;
 
         if (!alreadyNotified && billing && billing.phone) {
-          // Fire-and-forget: send WATI then mark as notified
-          sendWatiTemplateMessage({
+          await sendWatiTemplateMessage({
             name: billing.name,
             phone: billing.phone,
             url: reportBlobUrl,
-          })
-            .then(() =>
-              collection
-                .updateOne(
-                  { sessionId },
-                  { $set: { watiReportNotifiedAt: new Date() } },
-                )
-                .catch((err) => {
-                  console.warn('[pdf-api] Failed to mark watiReportNotifiedAt', sessionId, err);
-                }),
-            )
-            .catch((err) => {
-              console.warn('[pdf-api] WATI report send failed for session', sessionId, err);
-            });
+          });
+
+          await collection.updateOne(
+            { sessionId },
+            { $set: { watiReportNotifiedAt: new Date() } },
+          ).catch((err) => {
+            console.warn('[pdf-api] Failed to mark watiReportNotifiedAt', sessionId, err);
+          });
         } else {
           console.log('[pdf-api] Skipping WATI', {
             sessionId,
