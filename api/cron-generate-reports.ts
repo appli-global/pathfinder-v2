@@ -74,9 +74,15 @@ async function sendWatiTemplateMessage(args: {
       body: JSON.stringify(payload),
     });
 
+    const responseText = await resp.text();
+    console.log('[cron-generate-reports] WATI response', {
+      status: resp.status,
+      statusText: resp.statusText,
+      body: responseText,
+    });
+
     if (!resp.ok) {
-      const text = await resp.text();
-      console.warn('[cron-generate-reports] WATI send failed', resp.status, text);
+      console.warn('[cron-generate-reports] WATI send failed', resp.status, responseText);
       return;
     }
 
