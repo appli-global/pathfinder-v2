@@ -86,28 +86,32 @@ async function sendWatiTemplateMessage(args: {
   }
 }
 
-function createAnalysisPdf(analysis: any): Buffer {
-  const doc = new PDFDocument({ margin: 50 });
-  const chunks: Buffer[] = [];
-  doc.on('data', (chunk) => chunks.push(chunk));
+function createAnalysisPdf(analysis: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks: Buffer[] = [];
 
-  doc.fontSize(18).text(analysis?.data?.archetype?.title || 'Pathfinder Report', { underline: true });
-  doc.moveDown();
-  doc.fontSize(12).text(analysis?.data?.archetype?.description || '', { align: 'left' });
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
 
-  doc.moveDown();
-  doc.fontSize(14).text('Top Recommendations:', { underline: true });
-  const recs = analysis?.data?.recommendations || [];
-  recs.slice(0, 3).forEach((rec: any, idx: number) => {
-    doc.moveDown(0.5);
-    doc.fontSize(12).text(`${idx + 1}. ${rec.courseName} (${rec.degree})`);
-    if (rec.matchReason) {
-      doc.fontSize(10).text(`Why: ${rec.matchReason}`);
-    }
+    doc.fontSize(18).text(analysis?.data?.archetype?.title || 'Pathfinder Report', { underline: true });
+    doc.moveDown();
+    doc.fontSize(12).text(analysis?.data?.archetype?.description || '', { align: 'left' });
+
+    doc.moveDown();
+    doc.fontSize(14).text('Top Recommendations:', { underline: true });
+    const recs = analysis?.data?.recommendations || [];
+    recs.slice(0, 3).forEach((rec: any, idx: number) => {
+      doc.moveDown(0.5);
+      doc.fontSize(12).text(`${idx + 1}. ${rec.courseName} (${rec.degree})`);
+      if (rec.matchReason) {
+        doc.fontSize(10).text(`Why: ${rec.matchReason}`);
+      }
+    });
+
+    doc.end();
   });
-
-  doc.end();
-  return Buffer.concat(chunks);
 }
 
 export default async function handler(req: any, res: any) {
@@ -142,7 +146,7 @@ export default async function handler(req: any, res: any) {
       const { sessionId, analysis, billing, watiReportNotifiedAt } = doc as any;
       if (!sessionId || !analysis) continue;
 
-      const pdfBuffer = createAnalysisPdf(analysis);
+      const pdfBuffer = await createAnalysisPdf(analysis);
       const pdfBase64 = pdfBuffer.toString('base64');
 
       // optional: also upload PDF to Blob
