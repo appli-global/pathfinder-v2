@@ -196,7 +196,7 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Buff
   return Buffer.concat(chunks);
 }
 
-async function sendInvoiceViaWati(args: {
+export async function sendInvoiceViaWati(args: {
   billing: InvoiceRequestBody['billing'];
   invoiceNumber: string;
   invoiceUrl: string | null;
