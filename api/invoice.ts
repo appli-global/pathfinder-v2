@@ -309,7 +309,9 @@ export default async function handler(req: any, res: any) {
   const invoiceBlobUrl: string | null = null;
   const invoiceBase64 = pdfBuffer.toString('base64');
 
-    // Store invoice metadata in Mongo
+    // Store invoice metadata in Mongo. Use upsert so that even if the
+    // analysis document hasn't been created yet for this session, we
+    // still persist the invoice details.
     await collection.updateOne(
       { sessionId },
       {
@@ -322,7 +324,7 @@ export default async function handler(req: any, res: any) {
           paymentSummary: payment,
         },
       },
-      { upsert: false },
+      { upsert: true },
     );
 
     // Fire-and-forget WhatsApp notification via WATI; do not block response on this
