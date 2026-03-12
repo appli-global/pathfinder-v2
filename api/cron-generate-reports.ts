@@ -19,7 +19,8 @@ async function getClient() {
 // Minimal WATI config and helper for cron-triggered notifications.
 const WATI_BASE_URL = process.env.WATI_BASE_URL;
 const WATI_API_KEY = process.env.WATI_API_KEY;
-const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification1';
+// Use the report-ready template for cron (not the invoice template)
+const WATI_REPORT_TEMPLATE_NAME = 'career_pathfinder_report_ready_v2';
 const WATI_CHANNEL_NUMBER = process.env.WATI_CHANNEL_NUMBER;
 
 async function sendWatiTemplateMessage(args: {
@@ -44,7 +45,7 @@ async function sendWatiTemplateMessage(args: {
     const endpoint = `${baseUrl}/api/v2/sendTemplateMessages`;
 
     const payload: any = {
-      template_name: WATI_TEMPLATE_NAME,
+      template_name: WATI_REPORT_TEMPLATE_NAME,
       broadcast_name: 'Pathfinder Report',
       receivers: [
         {
@@ -61,7 +62,7 @@ async function sendWatiTemplateMessage(args: {
     console.log('[cron-generate-reports] WATI request', {
       endpoint,
       phone: cleanedPhone,
-      template: WATI_TEMPLATE_NAME,
+      template: WATI_REPORT_TEMPLATE_NAME,
       payload,
     });
 
