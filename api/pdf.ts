@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
 import { Readable } from 'stream';
-import { generateReportHtml } from './pdf-html-template';
+import { generateReportHtml } from '../lib/pdf-html-template';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
