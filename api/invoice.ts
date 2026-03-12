@@ -287,11 +287,14 @@ export default async function handler(req: any, res: any) {
     const db = client.db(dbName);
     const collection = db.collection('pathfinder_analysis_result');
 
-    // If phone is missing in billing, try fetching it from Razorpay
+    // If phone is missing in billing, try fetching it from Razorpay and
+    // keep track of the resolved contact separately so we can persist it.
+    let resolvedPhone: string | null = billing.phone || null;
     if (!billing.phone && payment?.paymentId) {
       const contact = await fetchRazorpayPaymentContact(payment.paymentId);
       if (contact) {
-        billing.phone = String(contact);
+        resolvedPhone = String(contact);
+        billing.phone = resolvedPhone;
         console.log('[invoice-api] Enriched billing.phone from Razorpay', {
           sessionId,
           paymentId: payment.paymentId,
@@ -321,7 +324,12 @@ export default async function handler(req: any, res: any) {
           invoiceBase64,
           invoiceGeneratedAt: new Date(now),
           billing,
-          paymentSummary: payment,
+          paymentSummary: {
+            ...payment,
+            // Store the final phone number we used for this payment (either
+            // provided upfront or enriched from Razorpay) for audit/debugging.
+            resolvedPhone,
+          },
         },
       },
       { upsert: true },
