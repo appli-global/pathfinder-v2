@@ -98,7 +98,7 @@ async function fetchRazorpayPaymentContact(paymentId?: string): Promise<string |
 
 function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 40 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
@@ -113,87 +113,164 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
     const gstAmount = +(grossAmount - taxableValue).toFixed(2);
     const halfGst = +(gstAmount / 2).toFixed(2);
 
-    // Seller static details - adjust to your actual legal details
+    // Seller static details
     const sellerName = 'APPT INNOVATION LABS PVT LTD';
     const sellerAddress = 'House no 650, 2nd phase, 80 Feet Rd, 1st phase\nGirinaagar, Banashankari, Bengaluru, Karnataka 560085';
     const sellerGst = '29ABACA7044A1Z2';
     const sellerPan = 'ABACA7044A';
     const sellerCin = 'U62090KA2024PTC188597';
-    const placeOfSupply = 'Bangalore';
+    const placeOfSupply = 'Karnataka';
 
     const invoiceDate = payment.timestamp ? new Date(payment.timestamp) : new Date();
 
-    // Header
-    doc.fontSize(12).text('Proforma INVOICE', { align: 'left' });
-    doc.text('Original for Buyer');
-    doc.moveDown(0.5);
+    // Colors
+    const primaryColor = '#2563eb'; // Blue
+    const darkColor = '#1e293b';
+    const grayColor = '#64748b';
+    const lightGray = '#f1f5f9';
 
-    // Seller block
-    doc.fontSize(11).text(sellerName, { align: 'left' });
-    doc.text(sellerAddress);
-    doc.text(`CIN: ${sellerCin}`);
+    // ===== HEADER SECTION =====
+    // Company name with accent color
+    doc.fontSize(22).fillColor(primaryColor).font('Helvetica-Bold').text('APPT INNOVATION LABS', 50, 50);
+    doc.fontSize(10).fillColor(grayColor).font('Helvetica').text('PVT LTD', 50, 75);
+    
+    // Invoice title on right
+    doc.fontSize(28).fillColor(darkColor).font('Helvetica-Bold').text('INVOICE', 400, 50, { align: 'right' });
+    doc.fontSize(10).fillColor(grayColor).font('Helvetica').text('Proforma Invoice - Original for Buyer', 400, 82, { align: 'right' });
 
-    doc.moveDown(1);
+    // Horizontal line
+    doc.moveTo(50, 110).lineTo(545, 110).strokeColor(primaryColor).lineWidth(2).stroke();
 
-    // Invoice + client details (simple stacked layout)
-    doc.fontSize(10);
-    doc.text(`Invoice Number: ${invoiceNumber}`);
-    doc.text(`Date: ${invoiceDate.toDateString()}`);
-    doc.text(`Place of Supply: ${placeOfSupply}`);
-    doc.text(`GST: ${sellerGst}`);
-    doc.text(`PAN: ${sellerPan}`);
+    // ===== INVOICE INFO ROW =====
+    const infoY = 130;
+    
+    // Left: Company details
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('FROM', 50, infoY);
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica-Bold').text(sellerName, 50, infoY + 15);
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text(sellerAddress.replace('\n', ', '), 50, infoY + 30, { width: 200 });
+    doc.text(`GSTIN: ${sellerGst}`, 50, infoY + 55);
+    doc.text(`PAN: ${sellerPan}`, 50, infoY + 68);
+    doc.text(`CIN: ${sellerCin}`, 50, infoY + 81);
 
-    doc.moveDown(0.5);
-    doc.text(`Client: ${billing.name}`);
-    doc.text(`Phone: ${billing.phone}`);
-    if (billing.email) doc.text(`Email: ${billing.email}`);
-    if (billing.addressLine1) doc.text(`Address: ${billing.addressLine1}`);
+    // Right: Invoice details box
+    const boxX = 350;
+    const boxWidth = 195;
+    doc.rect(boxX, infoY, boxWidth, 95).fillColor(lightGray).fill();
+    
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+    doc.text('Invoice Number', boxX + 10, infoY + 10);
+    doc.fontSize(11).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text(invoiceNumber, boxX + 10, infoY + 22);
+    
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+    doc.text('Date', boxX + 10, infoY + 42);
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica');
+    doc.text(invoiceDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), boxX + 10, infoY + 54);
+    
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+    doc.text('Place of Supply', boxX + 10, infoY + 72);
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica');
+    doc.text(placeOfSupply, boxX + 10, infoY + 84);
+
+    // ===== BILL TO SECTION =====
+    const billY = 245;
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('BILL TO', 50, billY);
+    doc.fontSize(12).fillColor(darkColor).font('Helvetica-Bold').text(billing.name, 50, billY + 15);
+    doc.fontSize(10).fillColor(grayColor).font('Helvetica');
+    doc.text(`Phone: ${billing.phone}`, 50, billY + 32);
+    if (billing.email) doc.text(`Email: ${billing.email}`, 50, billY + 45);
+    
+    let addressLine = '';
+    if (billing.addressLine1) addressLine += billing.addressLine1;
     if (billing.city || billing.state || billing.pincode) {
-      const line = [billing.city, billing.state, billing.pincode].filter(Boolean).join(', ');
-      if (line) doc.text(line);
+      const cityState = [billing.city, billing.state, billing.pincode].filter(Boolean).join(', ');
+      if (addressLine && cityState) addressLine += ', ';
+      addressLine += cityState;
     }
-    doc.text(`GSTIN: ${billing.gstin || '-'}`);
+    if (addressLine) doc.text(addressLine, 50, billY + 58, { width: 250 });
+    doc.text(`GSTIN: ${billing.gstin || 'N/A'}`, 50, billY + (addressLine ? 75 : 58));
 
-    doc.moveDown(1);
-
+    // ===== TABLE SECTION =====
+    const tableY = 340;
+    const tableWidth = 495;
+    
     // Table header
-    doc.fontSize(10).text('S. No.', 50, doc.y, { continued: true });
-    doc.text('Description', 90, doc.y, { continued: true });
-    doc.text('Total in INR', 400, doc.y);
+    doc.rect(50, tableY, tableWidth, 30).fillColor(primaryColor).fill();
+    doc.fontSize(10).fillColor('#ffffff').font('Helvetica-Bold');
+    doc.text('S.No', 60, tableY + 10);
+    doc.text('Description', 100, tableY + 10);
+    doc.text('Amount (₹)', 450, tableY + 10, { align: 'right', width: 85 });
 
-    doc.moveTo(40, doc.y + 4).lineTo(550, doc.y + 4).stroke();
-    doc.moveDown(0.7);
+    // Table row
+    const rowY = tableY + 30;
+    doc.rect(50, rowY, tableWidth, 40).fillColor('#ffffff').fill();
+    doc.rect(50, rowY, tableWidth, 40).strokeColor('#e2e8f0').lineWidth(1).stroke();
+    
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica');
+    doc.text('1', 60, rowY + 15);
+    doc.font('Helvetica-Bold').text('Pathfinder AI - Career Discovery Assessment', 100, rowY + 8);
+    doc.font('Helvetica').fontSize(9).fillColor(grayColor);
+    doc.text('Complete Career Report (Single Attempt)', 100, rowY + 22);
+    doc.fontSize(11).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text(taxableValue.toFixed(2), 450, rowY + 15, { align: 'right', width: 85 });
 
-    // Single line item
-    const description = 'Pathfinder AI - Career Discovery Assessment & Report (Single Attempt)';
-    doc.text('1', 50, doc.y, { continued: true });
-    doc.text(description, 90, doc.y, { continued: true });
-    doc.text(grossAmount.toFixed(2), 400, doc.y);
+    // ===== TOTALS SECTION =====
+    const totalsY = tableY + 90;
+    const totalsX = 350;
+    
+    // Subtotal
+    doc.fontSize(10).fillColor(grayColor).font('Helvetica');
+    doc.text('Subtotal', totalsX, totalsY);
+    doc.fillColor(darkColor).text(`₹ ${taxableValue.toFixed(2)}`, 450, totalsY, { align: 'right', width: 95 });
+    
+    // CGST
+    doc.fillColor(grayColor).text('CGST @ 9%', totalsX, totalsY + 18);
+    doc.fillColor(darkColor).text(`₹ ${halfGst.toFixed(2)}`, 450, totalsY + 18, { align: 'right', width: 95 });
+    
+    // SGST
+    doc.fillColor(grayColor).text('SGST @ 9%', totalsX, totalsY + 36);
+    doc.fillColor(darkColor).text(`₹ ${halfGst.toFixed(2)}`, 450, totalsY + 36, { align: 'right', width: 95 });
+    
+    // Divider
+    doc.moveTo(totalsX, totalsY + 55).lineTo(545, totalsY + 55).strokeColor('#e2e8f0').lineWidth(1).stroke();
+    
+    // Grand Total
+    doc.rect(totalsX - 10, totalsY + 60, 205, 30).fillColor(lightGray).fill();
+    doc.fontSize(12).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text('TOTAL', totalsX, totalsY + 70);
+    doc.fontSize(14).fillColor(primaryColor);
+    doc.text(`₹ ${grossAmount.toFixed(2)}`, 450, totalsY + 68, { align: 'right', width: 95 });
 
-    doc.moveDown(1);
-
-    // Totals section
-    doc.text(`Total Value: ${taxableValue.toFixed(2)}`);
-    doc.text(`Add: CGST @ 9%: ${halfGst.toFixed(2)}`);
-    doc.text(`Add: SGST @ 9%: ${halfGst.toFixed(2)}`);
-    doc.text(`Grand Total: ${grossAmount.toFixed(2)}`);
-
-    doc.moveDown(1);
-
+    // Amount in words
     const words = amountToWords(grossAmount);
-    doc.text(`(Rupees ${words} Only)`);
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica-Oblique');
+    doc.text(`Amount in words: Rupees ${words} Only`, 50, totalsY + 100);
 
-    doc.moveDown(1);
+    // ===== FOOTER SECTION =====
+    const footerY = 600;
+    
+    // Terms box
+    doc.rect(50, footerY, 250, 80).fillColor(lightGray).fill();
+    doc.fontSize(9).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text('Terms & Conditions', 60, footerY + 10);
+    doc.fontSize(8).fillColor(grayColor).font('Helvetica');
+    doc.text('• This is a computer-generated invoice', 60, footerY + 25);
+    doc.text('• Payment is non-refundable', 60, footerY + 37);
+    doc.text('• Report valid for single use only', 60, footerY + 49);
+    doc.text('• Subject to Bangalore jurisdiction', 60, footerY + 61);
 
-    // Simple terms footer
-    doc.fontSize(9).text('This is a system-generated invoice for your Pathfinder AI career report purchase.', {
-      width: 500,
-    });
+    // Signature area
+    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+    doc.text('For APPT INNOVATION LABS PVT LTD', 350, footerY + 10);
+    doc.moveTo(350, footerY + 55).lineTo(500, footerY + 55).strokeColor(grayColor).lineWidth(0.5).stroke();
+    doc.text('Authorised Signatory', 390, footerY + 60);
 
-    doc.moveDown(2);
-    doc.text('For APPT INNOVATION LABS PVT LTD');
-    doc.moveDown(2);
-    doc.text('Authorised Signatory');
+    // Bottom accent line
+    doc.moveTo(50, 750).lineTo(545, 750).strokeColor(primaryColor).lineWidth(3).stroke();
+    
+    // Footer text
+    doc.fontSize(8).fillColor(grayColor).font('Helvetica');
+    doc.text('Thank you for choosing Pathfinder AI | www.appli.asia | contact@appli.asia', 50, 760, { align: 'center', width: 495 });
 
     doc.end();
   });
