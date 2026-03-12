@@ -243,6 +243,7 @@ export async function sendInvoiceViaWati(args: {
       phone,
       template: WATI_TEMPLATE_NAME,
       hasApiKey: !!WATI_API_KEY,
+      apiKeyPreview: WATI_API_KEY ? `${WATI_API_KEY.slice(0, 10)}...${WATI_API_KEY.slice(-10)}` : 'N/A',
       payload,
     });
 
