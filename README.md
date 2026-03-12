@@ -22,3 +22,5 @@ View your app in AI Studio: https://ai.studio/apps/drive/1lHq4R2SUJ-0AP2emhR2yxH
 
 DB password witout string
 DB name required ///
+
+Wati implemented
