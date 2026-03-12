@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
-import PDFDocument from 'pdfkit';
 import { Readable } from 'stream';
+import { generateReportHtml } from '../lib/pdf-html-template.js';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -93,32 +93,38 @@ async function sendWatiTemplateMessage(args: {
   }
 }
 
-function createAnalysisPdf(analysis: any): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 });
-    const chunks: Buffer[] = [];
+/**
+ * Generate a styled PDF from the analysis data using Puppeteer.
+ * Uses the same HTML template as the browser print flow.
+ */
+async function createStyledPdf(analysis: any): Promise<Buffer> {
+  const chromium = (await import('@sparticuz/chromium')).default;
+  const puppeteer = (await import('puppeteer-core')).default;
 
-    doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
+  const html = generateReportHtml(analysis);
 
-    doc.fontSize(18).text(analysis?.data?.archetype?.title || 'Pathfinder Report', { underline: true });
-    doc.moveDown();
-    doc.fontSize(12).text(analysis?.data?.archetype?.description || '', { align: 'left' });
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: { width: 794, height: 1123 },
+    executablePath: await chromium.executablePath(),
+    headless: true,
+  });
 
-    doc.moveDown();
-    doc.fontSize(14).text('Top Recommendations:', { underline: true });
-    const recs = analysis?.data?.recommendations || [];
-    recs.slice(0, 3).forEach((rec: any, idx: number) => {
-      doc.moveDown(0.5);
-      doc.fontSize(12).text(`${idx + 1}. ${rec.courseName} (${rec.degree})`);
-      if (rec.matchReason) {
-        doc.fontSize(10).text(`Why: ${rec.matchReason}`);
-      }
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfUint8 = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      preferCSSPageSize: false,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
     });
 
-    doc.end();
-  });
+    return Buffer.from(pdfUint8);
+  } finally {
+    await browser.close();
+  }
 }
 
 export default async function handler(req: any, res: any) {
@@ -153,7 +159,7 @@ export default async function handler(req: any, res: any) {
       const { sessionId, analysis, billing, watiReportNotifiedAt } = doc as any;
       if (!sessionId || !analysis) continue;
 
-      const pdfBuffer = await createAnalysisPdf(analysis);
+      const pdfBuffer = await createStyledPdf(analysis);
       const pdfBase64 = pdfBuffer.toString('base64');
 
       // optional: also upload PDF to Blob
