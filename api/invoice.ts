@@ -255,9 +255,15 @@ export async function sendInvoiceViaWati(args: {
       body: JSON.stringify(payload),
     });
 
+    const responseText = await resp.text();
+    console.log('[invoice-api] WATI response', {
+      status: resp.status,
+      statusText: resp.statusText,
+      body: responseText,
+    });
+
     if (!resp.ok) {
-      const text = await resp.text();
-      console.warn('[invoice-api] WATI send failed', resp.status, text);
+      console.warn('[invoice-api] WATI send failed', resp.status, responseText);
       return;
     }
 
