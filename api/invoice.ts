@@ -97,87 +97,103 @@ async function fetchRazorpayPaymentContact(paymentId?: string): Promise<string |
 }
 
 function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
-    const chunks: Buffer[] = [];
+  return new Promise(async (resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+      const chunks: Buffer[] = [];
 
-    doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
-    const { billing, payment, amount } = body;
-    const grossAmount = amount / 100; // paise -> rupees
+      const { billing, payment, amount } = body;
+      const grossAmount = amount / 100; // paise -> rupees
 
-    const gstRate = 18;
-    const taxableValue = +(grossAmount / (1 + gstRate / 100)).toFixed(2);
-    const gstAmount = +(grossAmount - taxableValue).toFixed(2);
-    const halfGst = +(gstAmount / 2).toFixed(2);
+      const gstRate = 18;
+      const taxableValue = +(grossAmount / (1 + gstRate / 100)).toFixed(2);
+      const gstAmount = +(grossAmount - taxableValue).toFixed(2);
+      const halfGst = +(gstAmount / 2).toFixed(2);
 
-    // Seller static details
-    const sellerName = 'APPT INNOVATION LABS PVT LTD';
-    const sellerAddress = 'House no 650, 2nd phase, 80 Feet Rd, 1st phase\nGirinaagar, Banashankari, Bengaluru, Karnataka 560085';
-    const sellerGst = '29ABACA7044A1Z2';
-    const sellerPan = 'ABACA7044A';
-    const sellerCin = 'U62090KA2024PTC188597';
-    const placeOfSupply = 'Karnataka';
+      // Seller static details
+      const sellerName = 'APPT INNOVATION LABS PVT LTD';
+      const sellerAddress = 'House no 650, 2nd phase, 80 Feet Rd, 1st phase, Girinaagar, Banashankari, Bengaluru, Karnataka 560085';
+      const sellerGst = '29ABACA7044A1Z2';
+      const sellerPan = 'ABACA7044A';
+      const sellerCin = 'U62090KA2024PTC188597';
+      const placeOfSupply = 'Karnataka';
 
-    const invoiceDate = payment.timestamp ? new Date(payment.timestamp) : new Date();
+      const invoiceDate = payment.timestamp ? new Date(payment.timestamp) : new Date();
 
-    // Colors
-    const primaryColor = '#2563eb'; // Blue
-    const darkColor = '#1e293b';
-    const grayColor = '#64748b';
-    const lightGray = '#f1f5f9';
+      // Colors - Red theme matching Appli logo
+      const primaryColor = '#e63946'; // Appli Red
+      const darkColor = '#1e293b';
+      const grayColor = '#64748b';
+      const lightGray = '#f1f5f9';
 
-    // ===== HEADER SECTION =====
-    // Company name with accent color
-    doc.fontSize(22).fillColor(primaryColor).font('Helvetica-Bold').text('APPT INNOVATION LABS', 50, 50);
-    doc.fontSize(10).fillColor(grayColor).font('Helvetica').text('PVT LTD', 50, 75);
-    
-    // Invoice title on right
-    doc.fontSize(28).fillColor(darkColor).font('Helvetica-Bold').text('INVOICE', 400, 50, { align: 'right' });
-    doc.fontSize(10).fillColor(grayColor).font('Helvetica').text('Proforma Invoice - Original for Buyer', 400, 82, { align: 'right' });
+      // ===== HEADER SECTION =====
+      // Fetch and add logo
+      let logoAdded = false;
+      try {
+        const logoUrl = 'https://pathfinder.appli.global/appli-logo.png';
+        const logoResponse = await fetch(logoUrl);
+        if (logoResponse.ok) {
+          const logoBuffer = Buffer.from(await logoResponse.arrayBuffer());
+          doc.image(logoBuffer, 50, 45, { width: 120 });
+          logoAdded = true;
+        }
+      } catch (logoErr) {
+        console.warn('[invoice-api] Failed to fetch logo, using text fallback', logoErr);
+      }
+      
+      // Fallback to text if logo fails
+      if (!logoAdded) {
+        doc.fontSize(18).fillColor(primaryColor).font('Helvetica-Bold').text('APPLI', 50, 50);
+      }
+      
+      // Invoice title on right
+      doc.fontSize(28).fillColor(darkColor).font('Helvetica-Bold').text('INVOICE', 400, 50, { align: 'right' });
+      doc.fontSize(10).fillColor(grayColor).font('Helvetica').text('Proforma Invoice - Original for Buyer', 400, 82, { align: 'right' });
 
-    // Horizontal line
-    doc.moveTo(50, 110).lineTo(545, 110).strokeColor(primaryColor).lineWidth(2).stroke();
+      // Horizontal line
+      doc.moveTo(50, 110).lineTo(545, 110).strokeColor(primaryColor).lineWidth(2).stroke();
 
-    // ===== INVOICE INFO ROW =====
-    const infoY = 130;
-    
-    // Left: Company details
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('FROM', 50, infoY);
-    doc.fontSize(10).fillColor(darkColor).font('Helvetica-Bold').text(sellerName, 50, infoY + 15);
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text(sellerAddress.replace('\n', ', '), 50, infoY + 30, { width: 200 });
-    doc.text(`GSTIN: ${sellerGst}`, 50, infoY + 55);
-    doc.text(`PAN: ${sellerPan}`, 50, infoY + 68);
-    doc.text(`CIN: ${sellerCin}`, 50, infoY + 81);
+      // ===== INVOICE INFO ROW =====
+      const infoY = 130;
+      
+      // Left: Company details
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('FROM', 50, infoY);
+      doc.fontSize(10).fillColor(darkColor).font('Helvetica-Bold').text(sellerName, 50, infoY + 15);
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica').text(sellerAddress, 50, infoY + 30, { width: 250 });
+      doc.text(`GSTIN: ${sellerGst}`, 50, infoY + 58);
+      doc.text(`PAN: ${sellerPan}`, 50, infoY + 71);
+      doc.text(`CIN: ${sellerCin}`, 50, infoY + 84);
 
-    // Right: Invoice details box
-    const boxX = 350;
-    const boxWidth = 195;
-    doc.rect(boxX, infoY, boxWidth, 95).fillColor(lightGray).fill();
-    
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
-    doc.text('Invoice Number', boxX + 10, infoY + 10);
-    doc.fontSize(11).fillColor(darkColor).font('Helvetica-Bold');
-    doc.text(invoiceNumber, boxX + 10, infoY + 22);
-    
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
-    doc.text('Date', boxX + 10, infoY + 42);
-    doc.fontSize(10).fillColor(darkColor).font('Helvetica');
-    doc.text(invoiceDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), boxX + 10, infoY + 54);
-    
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
-    doc.text('Place of Supply', boxX + 10, infoY + 72);
-    doc.fontSize(10).fillColor(darkColor).font('Helvetica');
-    doc.text(placeOfSupply, boxX + 10, infoY + 84);
+      // Right: Invoice details box
+      const boxX = 350;
+      const boxWidth = 195;
+      doc.rect(boxX, infoY, boxWidth, 95).fillColor(lightGray).fill();
+      
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+      doc.text('Invoice Number', boxX + 10, infoY + 10);
+      doc.fontSize(11).fillColor(darkColor).font('Helvetica-Bold');
+      doc.text(invoiceNumber, boxX + 10, infoY + 22);
+      
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+      doc.text('Date', boxX + 10, infoY + 42);
+      doc.fontSize(10).fillColor(darkColor).font('Helvetica');
+      doc.text(invoiceDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), boxX + 10, infoY + 54);
+      
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica');
+      doc.text('Place of Supply', boxX + 10, infoY + 72);
+      doc.fontSize(10).fillColor(darkColor).font('Helvetica');
+      doc.text(placeOfSupply, boxX + 10, infoY + 84);
 
-    // ===== BILL TO SECTION =====
-    const billY = 245;
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('BILL TO', 50, billY);
-    doc.fontSize(12).fillColor(darkColor).font('Helvetica-Bold').text(billing.name, 50, billY + 15);
-    doc.fontSize(10).fillColor(grayColor).font('Helvetica');
-    doc.text(`Phone: ${billing.phone}`, 50, billY + 32);
+      // ===== BILL TO SECTION =====
+      const billY = 250;
+      doc.fontSize(9).fillColor(grayColor).font('Helvetica').text('BILL TO', 50, billY);
+      doc.fontSize(12).fillColor(darkColor).font('Helvetica-Bold').text(billing.name, 50, billY + 15);
+      doc.fontSize(10).fillColor(grayColor).font('Helvetica');
+      doc.text(`Phone: ${billing.phone}`, 50, billY + 32);
     if (billing.email) doc.text(`Email: ${billing.email}`, 50, billY + 45);
     
     let addressLine = '';
@@ -260,10 +276,24 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
     doc.text('• Subject to Bangalore jurisdiction', 60, footerY + 61);
 
     // Signature area
-    doc.fontSize(9).fillColor(grayColor).font('Helvetica');
-    doc.text('For APPT INNOVATION LABS PVT LTD', 350, footerY + 10);
-    doc.moveTo(350, footerY + 55).lineTo(500, footerY + 55).strokeColor(grayColor).lineWidth(0.5).stroke();
-    doc.text('Authorised Signatory', 390, footerY + 60);
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text('For APPT INNOVATION LABS PRIVATE LIMITED', 330, footerY + 5);
+    
+    // Fetch and add signature image
+    try {
+      const signatureUrl = 'https://pathfinder.appli.global/signature.png';
+      const signatureResponse = await fetch(signatureUrl);
+      if (signatureResponse.ok) {
+        const signatureBuffer = Buffer.from(await signatureResponse.arrayBuffer());
+        doc.image(signatureBuffer, 350, footerY + 20, { width: 80 });
+      }
+    } catch (sigErr) {
+      console.warn('[invoice-api] Failed to fetch signature image', sigErr);
+    }
+    
+    doc.moveTo(330, footerY + 65).lineTo(520, footerY + 65).strokeColor(grayColor).lineWidth(0.5).stroke();
+    doc.fontSize(10).fillColor(darkColor).font('Helvetica-Bold');
+    doc.text('Authorized Signatory', 370, footerY + 70);
 
     // Bottom accent line
     doc.moveTo(50, 750).lineTo(545, 750).strokeColor(primaryColor).lineWidth(3).stroke();
@@ -273,6 +303,9 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
     doc.text('Thank you for choosing Pathfinder AI | www.appli.asia | contact@appli.asia', 50, 760, { align: 'center', width: 495 });
 
     doc.end();
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
