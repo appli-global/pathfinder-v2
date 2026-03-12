@@ -21,8 +21,8 @@ async function getClient() {
 // Basic WATI configuration from environment
 const WATI_BASE_URL = process.env.WATI_BASE_URL;
 const WATI_API_KEY = process.env.WATI_API_KEY;
-const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification';
-const WATI_SENDER_WHATSAPP = process.env.WATI_SENDER_WHATSAPP || undefined;
+const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification1';
+const WATI_CHANNEL_NUMBER = process.env.WATI_CHANNEL_NUMBER;
 
 // Razorpay server-side credentials for payment lookup
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -214,33 +214,26 @@ async function sendInvoiceViaWati(args: {
       console.warn('[invoice-api] No phone number for WATI send');
       return;
     }
-    const baseUrl = WATI_BASE_URL.replace(/\/$/, '');
-    const url = `${baseUrl}/api/v1/sendTemplateMessage?whatsappNumber=${encodeURIComponent(phone)}`;
+  const baseUrl = WATI_BASE_URL.replace(/\/$/, '');
+  const url = `${baseUrl}/api/v1/sendTemplateMessages`;
 
     const amountStr = grossAmount.toFixed(2);
     const name = billing.name || 'there';
-
-    const components: any[] = [
-      {
-        type: 'body',
-        parameters: [
-          { type: 'text', text: name },
-          { type: 'text', text: invoiceNumber },
-          { type: 'text', text: amountStr },
-          { type: 'text', text: invoiceUrl || '-' },
-        ],
-      },
-    ];
-
+    // WATI expects receivers with customParams per your final curl
     const payload: any = {
       template_name: WATI_TEMPLATE_NAME,
       broadcast_name: 'Pathfinder Invoice',
-      parameters: components,
+      receivers: [
+        {
+          whatsappNumber: phone,
+          customParams: [
+            { name: '1', value: name },
+            { name: '2', value: invoiceUrl || '-' },
+          ],
+        },
+      ],
+      ...(WATI_CHANNEL_NUMBER ? { channel_number: WATI_CHANNEL_NUMBER } : {}),
     };
-
-    if (WATI_SENDER_WHATSAPP) {
-      (payload as any).whatsappNumber = WATI_SENDER_WHATSAPP;
-    }
 
     console.log('[invoice-api] WATI request', {
       url,
