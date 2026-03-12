@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import PDFDocument from 'pdfkit';
+import { Readable } from 'stream';
 import { put } from '@vercel/blob';
 
 const uri = process.env.MONGODB_URI;
@@ -311,16 +312,13 @@ export default async function handler(req: any, res: any) {
     let invoiceBlobUrl: string | null = null;
     try {
       const blobName = `invoices/${invoiceNumber}.pdf`;
-      // Vercel Blob requires a content-length header; using an ArrayBuffer body
-      // with an explicit contentLength satisfies this requirement.
-      const arrayBuffer = pdfBuffer.buffer.slice(
-        pdfBuffer.byteOffset,
-        pdfBuffer.byteOffset + pdfBuffer.byteLength,
-      );
-      const result = await put(blobName, arrayBuffer as any, {
+      // Use a Node.js Readable stream from the Buffer; Vercel Blob can infer the
+      // content length from the stream and no explicit x-content-length header
+      // is required from our side.
+      const stream = Readable.from(pdfBuffer);
+      const result = await put(blobName, stream as any, {
         access: 'public',
         contentType: 'application/pdf',
-        contentLength: pdfBuffer.byteLength,
       } as any);
       invoiceBlobUrl = result.url;
       console.log('[invoice-api] Uploaded invoice PDF to Blob', { invoiceNumber, url: invoiceBlobUrl });
