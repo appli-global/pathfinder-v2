@@ -125,7 +125,7 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
       const invoiceDate = payment.timestamp ? new Date(payment.timestamp) : new Date();
 
       // Colors - Red theme matching Appli logo
-      const primaryColor = '#e63946'; // Appli Red
+  const primaryColor = '#ED1164'; // Appli Pink/Red
       const darkColor = '#1e293b';
       const grayColor = '#64748b';
       const lightGray = '#f1f5f9';
