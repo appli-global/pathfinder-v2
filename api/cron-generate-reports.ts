@@ -131,6 +131,11 @@ export default async function handler(req: any, res: any) {
       .limit(10)
       .toArray();
 
+    if (!pending.length) {
+      console.log('[cron-generate-reports] No pending sessions');
+      return res.status(200).json({ ok: true, processed: 0 });
+    }
+
     let processed = 0;
 
     for (const doc of pending) {
@@ -164,16 +169,29 @@ export default async function handler(req: any, res: any) {
       // defined in this file to avoid cross-import issues.
       if (!watiReportNotifiedAt && billing && blob.url) {
         try {
-          await sendWatiTemplateMessage({
+          // Fire-and-forget: don't block the cron run on external WATI latency.
+          sendWatiTemplateMessage({
             name: billing.name,
             phone: billing.phone,
             url: blob.url,
-          });
-
-          await collection.updateOne(
-            { sessionId },
-            { $set: { watiReportNotifiedAt: new Date() } },
-          );
+          })
+            .then(() =>
+              collection
+                .updateOne(
+                  { sessionId },
+                  { $set: { watiReportNotifiedAt: new Date() } },
+                )
+                .catch((err) => {
+                  console.warn(
+                    '[cron-generate-reports] Failed to mark watiReportNotifiedAt',
+                    sessionId,
+                    err,
+                  );
+                }),
+            )
+            .catch((err) => {
+              console.warn('[cron-generate-reports] WATI report send failed for session', sessionId, err);
+            });
         } catch (err) {
           console.warn('[cron-generate-reports] WATI report send failed for session', sessionId, err);
         }
