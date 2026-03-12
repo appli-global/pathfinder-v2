@@ -2,7 +2,6 @@ import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
 import PDFDocument from 'pdfkit';
 import { Readable } from 'stream';
-import { sendInvoiceViaWati } from './invoice';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'appli';
@@ -15,6 +14,76 @@ async function getClient() {
   cachedClient = new MongoClient(uri);
   await cachedClient.connect();
   return cachedClient;
+}
+
+// Minimal WATI config and helper for cron-triggered notifications.
+const WATI_BASE_URL = process.env.WATI_BASE_URL;
+const WATI_API_KEY = process.env.WATI_API_KEY;
+const WATI_TEMPLATE_NAME = process.env.WATI_TEMPLATE_NAME || 'pf_invoice_notification1';
+const WATI_CHANNEL_NUMBER = process.env.WATI_CHANNEL_NUMBER;
+
+async function sendWatiTemplateMessage(args: {
+  name: string;
+  phone: string;
+  url: string | null;
+}) {
+  try {
+    if (!WATI_BASE_URL || !WATI_API_KEY) {
+      console.warn('[cron-generate-reports] WATI env vars missing, skipping WhatsApp notification');
+      return;
+    }
+
+    const { name, phone, url } = args;
+    const cleanedPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanedPhone) {
+      console.warn('[cron-generate-reports] No phone number for WATI send');
+      return;
+    }
+
+    const baseUrl = WATI_BASE_URL.replace(/\/$/, '');
+    const endpoint = `${baseUrl}/api/v2/sendTemplateMessages`;
+
+    const payload: any = {
+      template_name: WATI_TEMPLATE_NAME,
+      broadcast_name: 'Pathfinder Report',
+      receivers: [
+        {
+          whatsappNumber: cleanedPhone,
+          customParams: [
+            { name: '1', value: name || 'there' },
+            { name: '2', value: url || '-' },
+          ],
+        },
+      ],
+      ...(WATI_CHANNEL_NUMBER ? { channel_number: WATI_CHANNEL_NUMBER } : {}),
+    };
+
+    console.log('[cron-generate-reports] WATI request', {
+      endpoint,
+      phone: cleanedPhone,
+      template: WATI_TEMPLATE_NAME,
+      payload,
+    });
+
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${WATI_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      console.warn('[cron-generate-reports] WATI send failed', resp.status, text);
+      return;
+    }
+
+    console.log('[cron-generate-reports] WATI notification sent', { phone: cleanedPhone });
+  } catch (err) {
+    console.warn('[cron-generate-reports] Error while sending WATI notification', err);
+  }
 }
 
 function createAnalysisPdf(analysis: any): Buffer {
@@ -65,16 +134,7 @@ export default async function handler(req: any, res: any) {
     let processed = 0;
 
     for (const doc of pending) {
-      const {
-        sessionId,
-        analysis,
-        billing,
-        invoiceNumber,
-        invoiceBlobUrl,
-        watiInvoiceNotifiedAt,
-        watiReportNotifiedAt,
-        paymentSummary,
-      } = doc as any;
+      const { sessionId, analysis, billing, watiReportNotifiedAt } = doc as any;
       if (!sessionId || !analysis) continue;
 
       const pdfBuffer = createAnalysisPdf(analysis);
@@ -99,40 +159,15 @@ export default async function handler(req: any, res: any) {
         },
       );
 
-      // Option A: also send the invoice WATI message from cron for sessions
-      // that have invoice metadata but haven't been notified yet.
-      if (!watiInvoiceNotifiedAt && billing && invoiceNumber) {
-        try {
-          const amountPaise: number | undefined = paymentSummary?.amount;
-          const grossAmount = typeof amountPaise === 'number' ? amountPaise / 100 : 0;
-
-          await sendInvoiceViaWati({
-            billing,
-            invoiceNumber,
-            invoiceUrl: invoiceBlobUrl || null,
-            grossAmount,
-          });
-
-          await collection.updateOne(
-            { sessionId },
-            { $set: { watiInvoiceNotifiedAt: new Date() } },
-          );
-        } catch (err) {
-          console.warn('[cron-generate-reports] WATI send failed for session', sessionId, err);
-        }
-      }
-
-      // Additionally, send a dedicated "Pathfinder report ready" WATI message
-      // using the report Blob URL, once per session. This uses the same
-      // sendInvoiceViaWati helper but passes the report URL instead of the
-      // invoice URL so the WhatsApp template can include the analytics PDF link.
+      // Send a dedicated "Pathfinder report ready" WATI message using the
+      // report Blob URL, once per session. This uses a minimal helper
+      // defined in this file to avoid cross-import issues.
       if (!watiReportNotifiedAt && billing && blob.url) {
         try {
-          await sendInvoiceViaWati({
-            billing,
-            invoiceNumber: invoiceNumber || sessionId,
-            invoiceUrl: blob.url,
-            grossAmount: 0,
+          await sendWatiTemplateMessage({
+            name: billing.name,
+            phone: billing.phone,
+            url: blob.url,
           });
 
           await collection.updateOne(
