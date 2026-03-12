@@ -250,14 +250,14 @@ export const QuizPage: React.FC = () => {
                     <div className="text-center mb-8 animate-fade-in-up delay-100">
                         <div className="inline-flex items-center gap-2 bg-pink-50 border border-pink-100 text-[#ED1164] text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#ED1164] animate-pulse-dot inline-block" />
-                            <span>Career Discovery Assessment <span className="mx-1 opacity-50">|</span> <span className="normal-case tracking-normal text-[13px]">at ₹499 only</span></span>
+                            <span>COURSE DISCOVERY ASSESSMENT <span className="mx-1 opacity-50">|</span> <span className="normal-case tracking-normal text-[13px]">at ₹499 only</span></span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-3">
-                            Your Journey to the<br />
-                            <span className="shimmer-text">Perfect Career</span>
+                            Still Figuring Out What to Study? <br />
+                            <span className="shimmer-text">You're in the Right Place</span>
                         </h1>
                         <p className="text-slate-500 text-base max-w-sm mx-auto leading-relaxed mb-8">
-                            Follow the path — 3 short sections, one powerful result.
+                            Answer 3 sets of questions. Get a personalised course report built on 850+ courses and real industry data.
                         </p>
 
                         {/* ── CTA ── */}
@@ -266,13 +266,13 @@ export const QuizPage: React.FC = () => {
                                 onClick={handleStart}
                                 className="w-full max-w-xs bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 shadow-xl shadow-pink-300/40 hover:-translate-y-1 hover:shadow-pink-400/60 flex items-center justify-center gap-3 text-lg group animate-float-scale"
                             >
-                                <span>Begin Your Journey</span>
+                                <span>Get Your Report</span>
                                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
                             </button>
                             {error && <p className="text-red-600 text-xs bg-red-50 px-3 py-2 rounded border border-red-100">{error}</p>}
-                            <p className="text-xs text-slate-400">No sign-up required · Results in minutes</p>
+                            <p className="text-xs text-slate-400">No sign-up · 10-minute assessment · Instant report</p>
                         </div>
                     </div>
 
