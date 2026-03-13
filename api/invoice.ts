@@ -138,8 +138,22 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
         const logoResponse = await fetch(logoUrl);
         if (logoResponse.ok) {
           const logoBuffer = Buffer.from(await logoResponse.arrayBuffer());
-          doc.image(logoBuffer, 50, 45, { width: 120 });
-          logoAdded = true;
+          const isPng =
+            logoBuffer.length > 8 &&
+            logoBuffer[0] === 0x89 &&
+            logoBuffer[1] === 0x50 &&
+            logoBuffer[2] === 0x4e &&
+            logoBuffer[3] === 0x47;
+          const isJpeg =
+            logoBuffer.length > 2 &&
+            logoBuffer[0] === 0xff &&
+            logoBuffer[1] === 0xd8;
+          if (isPng || isJpeg) {
+            doc.image(logoBuffer, 50, 45, { width: 120 });
+            logoAdded = true;
+          } else {
+            console.warn('[invoice-api] Logo image has unsupported format, using text fallback. First bytes:', logoBuffer.slice(0, 8).toString('hex'));
+          }
         }
       } catch (logoErr) {
         console.warn('[invoice-api] Failed to fetch logo, using text fallback', logoErr);
@@ -285,7 +299,24 @@ function createInvoicePdf(invoiceNumber: string, body: InvoiceRequestBody): Prom
       const signatureResponse = await fetch(signatureUrl);
       if (signatureResponse.ok) {
         const signatureBuffer = Buffer.from(await signatureResponse.arrayBuffer());
-        doc.image(signatureBuffer, 350, footerY + 20, { width: 80 });
+        // Validate that the buffer is actually a PNG or JPEG before passing to pdfkit.
+        // pdfkit only supports PNG, JPEG, and TIFF. If the server returns HTML
+        // (e.g. due to a catch-all rewrite) or an unsupported format, skip gracefully.
+        const isPng =
+          signatureBuffer.length > 8 &&
+          signatureBuffer[0] === 0x89 &&
+          signatureBuffer[1] === 0x50 &&
+          signatureBuffer[2] === 0x4e &&
+          signatureBuffer[3] === 0x47;
+        const isJpeg =
+          signatureBuffer.length > 2 &&
+          signatureBuffer[0] === 0xff &&
+          signatureBuffer[1] === 0xd8;
+        if (isPng || isJpeg) {
+          doc.image(signatureBuffer, 350, footerY + 20, { width: 80 });
+        } else {
+          console.warn('[invoice-api] Signature image has unsupported format, skipping. First bytes:', signatureBuffer.slice(0, 8).toString('hex'));
+        }
       }
     } catch (sigErr) {
       console.warn('[invoice-api] Failed to fetch signature image', sigErr);
