@@ -432,11 +432,64 @@ export function generateReportHtml(analysis: any): string {
       <p style="color:#64748b;font-size:18px;margin:0;">A Visual map of your core capabilities</p>
     </div>
     <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-      <!-- Radar chart as simplified representation -->
-      <div style="width:400px;height:400px;border-radius:50%;border:3px solid #ED1164;opacity:0.3;position:absolute;"></div>
-      <div style="width:300px;height:300px;border-radius:50%;border:2px solid #cbd5e1;position:absolute;"></div>
-      <div style="width:200px;height:200px;border-radius:50%;border:2px solid #cbd5e1;position:absolute;"></div>
-      <div style="width:100px;height:100px;border-radius:50%;border:2px solid #cbd5e1;position:absolute;"></div>
+      ${(() => {
+        // Build a proper SVG radar chart from skillSignature data
+        const cx = 200, cy = 200, maxR = 160;
+        const n = skillSignature.length || 6;
+        const angleStep = (2 * Math.PI) / n;
+        const startAngle = -Math.PI / 2; // Start from top
+
+        // Helper: get (x, y) for a given index and radius
+        const point = (i: number, r: number) => {
+          const angle = startAngle + i * angleStep;
+          return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+        };
+
+        // Hexagonal grid rings at 25%, 50%, 75%, 100%
+        const rings = [0.25, 0.5, 0.75, 1.0];
+        const gridLines = rings.map(frac => {
+          const r = maxR * frac;
+          const pts = Array.from({ length: n }, (_, i) => {
+            const p = point(i, r);
+            return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+          }).join(' ');
+          return `<polygon points="${pts}" fill="none" stroke="#cbd5e1" stroke-width="1"/>`;
+        }).join('\n');
+
+        // Axis lines from center to each vertex
+        const axisLines = Array.from({ length: n }, (_, i) => {
+          const p = point(i, maxR);
+          return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#cbd5e1" stroke-width="0.5"/>`;
+        }).join('\n');
+
+        // Data polygon
+        const dataPoints = skillSignature.map((skill: any, i: number) => {
+          const r = (skill.A / 100) * maxR;
+          const p = point(i, r);
+          return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+        }).join(' ');
+
+        // Labels positioned outside the chart
+        const labelOffset = 24;
+        const labels = skillSignature.map((skill: any, i: number) => {
+          const p = point(i, maxR + labelOffset);
+          const angle = startAngle + i * angleStep;
+          // Determine text-anchor based on position
+          let anchor = 'middle';
+          if (Math.cos(angle) > 0.3) anchor = 'start';
+          else if (Math.cos(angle) < -0.3) anchor = 'end';
+          // Slight vertical adjustment
+          const dy = Math.sin(angle) > 0.3 ? 12 : (Math.sin(angle) < -0.3 ? -4 : 4);
+          return `<text x="${p.x.toFixed(1)}" y="${(p.y + dy).toFixed(1)}" text-anchor="${anchor}" fill="#475569" font-size="12" font-weight="700" font-family="Inter, sans-serif">${h(skill.subject)}</text>`;
+        }).join('\n');
+
+        return `<svg viewBox="0 0 400 400" style="width:360px;height:360px;">
+          ${gridLines}
+          ${axisLines}
+          <polygon points="${dataPoints}" fill="rgba(237,17,100,0.3)" stroke="#ED1164" stroke-width="3"/>
+          ${labels}
+        </svg>`;
+      })()}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 64px;margin-top:48px;">
       ${skillBarsHtml}
