@@ -262,13 +262,12 @@ const parseCoursesFromCSV = (csvData: string): Course[] => {
 
     if (safeValues.length < 4) continue;
 
-    // Col 0: SheetDegree (Code)
-    // Col 1: Degree Name
-    // Col 2: Specialization
-    // Col 3+: Weights
-    const degreeCode = safeValues[0];
-    const degreeName = safeValues[1];
-    const specialization = safeValues[2];
+    // Col 0: Degree Name
+    // Col 1: Specialization
+    // Col 2+: Weights
+    const degreeName = safeValues[0];
+    const specialization = safeValues[1];
+    const degreeCode = degreeName.split(' ')[0] || 'Degree'; // Derive a simple code
 
     // SKIP HEADER ROWS (Crucial Fix)
     if (
@@ -279,10 +278,10 @@ const parseCoursesFromCSV = (csvData: string): Course[] => {
       continue;
     }
 
-    // Skill weights start at index 3
+    // Skill weights start at index 2
     // We Map them to SKILL_COLUMNS
     const weights: Record<string, number> = {};
-    const weightValues = safeValues.slice(3); // All remaining columns
+    const weightValues = safeValues.slice(2); // All remaining columns
 
     SKILL_COLUMNS.forEach((skill, index) => {
       if (index < weightValues.length) {
