@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnalysisResult } from '../types';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { PDFReportTemplate } from './PDFReportTemplate'; // NEW IMPORT
 import { useNavigate } from 'react-router-dom';
+import { toPng } from 'html-to-image';
+import { SocialShareCard } from './SocialShareCard';
 // html2pdf imported dynamically
 
 interface ResultsViewProps {
@@ -23,11 +25,16 @@ const cleanText = (text: string | undefined) => {
 
 export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(0);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const isInternalScroll = useRef(false);
   const [isSpeaking, setIsSpeaking] = useState(false); // Audio State
 
   const shareUrl = window.location.href;
   const archetypeTitle = cleanText(data.archetype.title);
-  const shareText = `I just discovered my professional archetype is "${archetypeTitle}" on Pathfinder AI! 🚀`;
+  const shareText = `I just discovered my professional archetype is "${archetypeTitle}" on Appli pathfinder! 🚀`;
 
   const displayData = {
     ...data
@@ -132,6 +139,81 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
     });
   };
 
+  const handleOpenShareModal = () => {
+    setShowShareModal(true);
+  };
+
+  // Sync slider when selectedTheme changes from buttons
+  useEffect(() => {
+    if (sliderRef.current && !isInternalScroll.current) {
+      const container = sliderRef.current;
+      const cardWidth = 320; // Match the card width in preview
+      const gap = 24; // Match the gap
+      container.scrollTo({
+        left: selectedTheme * (cardWidth + gap),
+        behavior: 'smooth'
+      });
+    }
+    isInternalScroll.current = false;
+  }, [selectedTheme]);
+
+  const handleSliderScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const cardWidth = 320;
+    const gap = 24;
+    const index = Math.round(container.scrollLeft / (cardWidth + gap));
+    if (index !== selectedTheme && index >= 0 && index < 3) {
+      isInternalScroll.current = true;
+      setSelectedTheme(index);
+    }
+  };
+
+  const handleShareResult = async () => {
+    const element = document.getElementById('social-share-capture');
+    if (!element) return;
+
+    try {
+      setIsSharing(true);
+      // Wait for fonts and ensure the hidden element is fully rendered and styled
+      await document.fonts.ready;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const dataUrl = await toPng(element, {
+        quality: 1,
+        pixelRatio: 2, // Use 2 for better compatibility and performance
+        cacheBust: true,
+        filter: (node) => {
+          // Skip external resources that might cause CORS issues
+          if (node.tagName === 'IFRAME') return false;
+          return true;
+        },
+      });
+
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `pathfinder-${archetypeTitle.toLowerCase().replace(/\s+/g, '-')}.png`, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My Professional Archetype',
+          text: shareText,
+        });
+      } else {
+        const link = document.createElement('a');
+        link.download = `pathfinder-archetype.png`;
+        link.href = dataUrl;
+        link.click();
+        alert("Sharing not supported on this browser. The archetype image has been downloaded instead!");
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+      alert("Failed to generate share image. Please try again.");
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   // --- SECTIONS ---
 
   const ArchetypeSection = (
@@ -164,8 +246,20 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
                   </>
                 )}
               </button>
+
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight break-words hyphens-auto">{archetypeTitle}</h1>
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 mb-6">
+              <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight break-words hyphens-auto">{archetypeTitle}</h1>
+              <button
+                onClick={handleOpenShareModal}
+                className="group flex flex-shrink-0 items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-[#ED1164] hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100 transition-all duration-300"
+                title="Share your archetype"
+              >
+                <svg className="w-5 h-5 md:w-6 md:h-6 transform group-hover:scale-110 animate-rotate transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" />
+                </svg>
+              </button>
+            </div>
             <p className="text-lg md:text-xl text-slate-600 max-w-3xl leading-relaxed font-light">
               {cleanText(displayData.archetype.description)}
             </p>
@@ -589,7 +683,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
           Start New Assessment
         </button>
       </div>
-      <p className="text-slate-400 text-xs">Pathfinder AI v2.5 </p>
+      <p className="text-slate-400 text-xs">Appli pathfinder v2.5 </p>
     </div>
   );
 
@@ -603,6 +697,158 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
           <p className="text-slate-500">Please wait while we format your PDF.</p>
         </div>
       )}
+
+      {/* Share Preview Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl overflow-hidden max-w-[900px] w-full flex flex-col md:flex-row h-full max-h-[800px] shadow-2xl">
+            {/* Left: Preview Slider */}
+            <div className="flex-1 bg-slate-50/50 p-8 flex items-center justify-center overflow-hidden min-h-[500px] border-r border-slate-100 relative group">
+              {/* Navigation Arrows */}
+              {selectedTheme > 0 && (
+                <button
+                  onClick={() => setSelectedTheme(prev => Math.max(0, prev - 1))}
+                  className="absolute left-4 z-20 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-slate-100 text-slate-600 hover:text-pink-500 hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              {selectedTheme < 2 && (
+                <button
+                  onClick={() => setSelectedTheme(prev => Math.min(2, prev + 1))}
+                  className="absolute right-4 z-20 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-slate-100 text-slate-600 hover:text-pink-500 hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+
+              <div
+                ref={sliderRef}
+                onScroll={handleSliderScroll}
+                className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-[12%] py-4 no-scrollbar scroll-smooth w-full"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {[0, 1, 2].map((idx) => (
+                  <div key={idx} className="snap-center shrink-0 transition-all duration-500 flex items-center justify-center w-[280px] sm:w-[400px]" style={{ opacity: selectedTheme === idx ? 1 : 0.5 }}>
+                    <div
+                      className="origin-center shadow-2xl rounded-[32px] overflow-hidden"
+                      style={{
+                        transform: selectedTheme === idx ? 'scale(0.8)' : 'scale(0.7) translateY(10px)',
+                        width: '400px',
+                        height: '711px',
+                        backgroundColor: '#000',
+                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      <SocialShareCard data={displayData} id={`social-preview-${idx}`} themeIndex={idx} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Controls */}
+            <div className="w-full md:w-[350px] p-8 flex flex-col gap-8 bg-white overflow-y-auto">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Select Theme</h3>
+                  <p className="text-slate-500 text-sm mt-1">Perfect for your social vibe.</p>
+                </div>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Theme Selection List */}
+              <div className="space-y-3">
+                {[
+                  { name: 'Appli Pink' },
+                  { name: 'Emerald Forest' },
+                  { name: 'Midnight Blue' },
+                ].map((t, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedTheme(idx)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300 ${selectedTheme === idx
+                      ? 'border-pink-500 bg-pink-50/30'
+                      : 'border-slate-100 bg-white hover:border-slate-200'
+                      }`}
+                  >
+                    {/* Mini card preview */}
+                    <div className="w-12 h-12 rounded-xl bg-slate-900 shadow-inner shrink-0 overflow-hidden relative">
+                      <div className="absolute top-0 left-0 origin-top-left pointer-events-none" style={{ transform: 'scale(0.12)', width: '400px', height: '711px' }}>
+                        <SocialShareCard data={displayData} id={`sidebar-thumb-${idx}`} themeIndex={idx} />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-start translate-y-[1px]">
+                      <span className={`text-[15px] font-bold ${selectedTheme === idx ? 'text-slate-900' : 'text-slate-600'}`}>
+                        {t.name}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-medium tracking-tight">Apply Style</span>
+                    </div>
+                    {selectedTheme === idx && (
+                      <div className="ml-auto w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="mt-auto pt-8 border-t border-slate-100 space-y-3">
+                <button
+                  onClick={handleShareResult}
+                  disabled={isSharing}
+                  className="w-full bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 rounded-2xl transition-all shadow-lg hover:shadow-pink-200 flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isSharing ? (
+                    <>
+                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Generating Image...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" />
+                      </svg>
+                      <span>Share Now</span>
+                    </>
+                  )}
+                </button>
+                <p className="text-[10px] text-slate-400 text-center px-4 leading-relaxed">
+                  Manifest your career lore. Ready for the feed. ✨
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden element for sharing capture - prevents alignment issues from scale/zoom */}
+      <div
+        className="fixed -left-[9999px] top-0 pointer-events-none"
+        style={{ width: '400px', height: '711px' }}
+      >
+        <SocialShareCard
+          data={displayData}
+          id="social-share-capture"
+          themeIndex={selectedTheme}
+        />
+      </div>
 
       {/* OFF-SCREEN PDF TEMPLATE - Render it always but hide it. FOR PRINT: We reveal this and hide others. */}
       <div id="print-wrapper" className="absolute top-0 -left-[10000px] pointer-events-none print:static print:left-0 print:top-0 print:pointer-events-auto">
