@@ -103,3 +103,5 @@ It generates:
 Because LLMs can occasionally mutate strings, the final output undergoes strict validation.
 * If the AI accidentally renames a recommended course (e.g., changing "B.Tech Computer Science" to "Bachelors in Coding"), the validation layer catches it by cross-referencing `VALID_COURSE_NAMES`.
 * If a hallucination is detected, the system safely overwrites the AI's output with the mathematically highest-ranked valid course from Phase 2, ensuring 100% data integrity before rendering the screen or the PDF report.
+rever the gemin 
+
