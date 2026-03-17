@@ -198,7 +198,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
             quality: 1,
             pixelRatio: 2,
             cacheBust: true,
-            skipFonts: true,
+            fontEmbedCSS: '', // Skip all CSS rule scanning to avoid CORS errors with Google Fonts
             filter: (node: any) => {
               if (node.tagName === 'IFRAME') return false;
               return true;
@@ -236,9 +236,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
         link.click();
         alert("Sharing not supported on this browser. The archetype image has been downloaded instead!");
       }
-    } catch (err) {
-      console.error('Error sharing:', err);
-      alert("Failed to generate share image. Please try again.");
+    } catch (err: any) {
+      // User canceling the native share dialog throws AbortError — not an actual error
+      if (err?.name === 'AbortError') {
+        console.debug('[share] User cancelled share dialog');
+      } else {
+        console.error('Error sharing:', err);
+        alert("Failed to generate share image. Please try again.");
+      }
     } finally {
       setIsSharing(false);
     }
