@@ -51,6 +51,38 @@ export default defineConfig(({ mode }) => {
               next();
             }
           });
+
+          // Local dev handler for coupon validation
+          server.middlewares.use('/api/validate-coupon', async (req, res, next) => {
+            if (req.method === 'POST') {
+              let body = '';
+              req.on('data', chunk => body += chunk);
+              req.on('end', async () => {
+                try {
+                  const handler = (await import('./api/validate-coupon')).default;
+                  const data = JSON.parse(body);
+                  const mockReq = { method: 'POST', body: data };
+                  const mockRes = {
+                    statusCode: 200,
+                    setHeader: () => {},
+                    status(code: number) { this.statusCode = code; return this; },
+                    json(obj: any) {
+                      res.statusCode = this.statusCode;
+                      res.setHeader('Content-Type', 'application/json');
+                      res.end(JSON.stringify(obj));
+                    },
+                  };
+                  await handler(mockReq, mockRes);
+                } catch (e) {
+                  console.error('[validate-coupon dev]', e);
+                  res.statusCode = 500;
+                  res.end(JSON.stringify({ valid: false, message: 'Server error' }));
+                }
+              });
+            } else {
+              next();
+            }
+          });
         }
       }
     ],

@@ -8,7 +8,7 @@ const createSessionId = () =>
     `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 
 type Level = '12' | 'UG';
-type AppStep = 'WELCOME' | 'SECTION_TRANSITION' | 'QUIZ';
+type AppStep = 'WELCOME' | 'SECTION_TRANSITION' | 'QUIZ' | 'PAYMENT_SUMMARY';
 
 export const QuizPage: React.FC = () => {
     const [appStep, setAppStep] = useState<AppStep>('WELCOME');
@@ -21,7 +21,50 @@ export const QuizPage: React.FC = () => {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const navigate = useNavigate();
 
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [couponResult, setCouponResult] = useState<{
+        valid: boolean;
+        code?: string;
+        discountAmountPaise?: number;
+        finalAmountPaise?: number;
+        message?: string;
+    } | null>(null);
+    const ORIGINAL_AMOUNT_PAISE = 49900; // ₹499
+
     const activeQuestions = selectedLevel === '12' ? QUESTIONS_12TH : QUESTIONS_UG;
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setCouponLoading(true);
+        setCouponResult(null);
+        try {
+            const resp = await fetch('/api/validate-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: couponCode.trim(), originalAmountPaise: ORIGINAL_AMOUNT_PAISE }),
+            });
+            const data = await resp.json();
+            setCouponResult(data);
+        } catch {
+            setCouponResult({ valid: false, message: 'Unable to validate coupon. Please try again.' });
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setCouponCode('');
+        setCouponResult(null);
+    };
+
+    const getPayableAmount = () => {
+        if (couponResult?.valid && couponResult.finalAmountPaise) {
+            return couponResult.finalAmountPaise;
+        }
+        return ORIGINAL_AMOUNT_PAISE;
+    };
 
     const startRazorpayPayment = () => {
         const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
@@ -30,7 +73,7 @@ export const QuizPage: React.FC = () => {
             return;
         }
 
-        const amountInPaise = 49900; // ₹499.00. //49900
+        const amountInPaise = getPayableAmount();
 
         const options: any = {
             key,
@@ -84,6 +127,8 @@ export const QuizPage: React.FC = () => {
                                     phone: razorpayContact,
                                 },
                                 amount: amountInPaise,
+                                originalAmount: ORIGINAL_AMOUNT_PAISE,
+                                couponCode: couponResult?.valid ? couponResult.code : undefined,
                                 currency: 'INR',
                             }),
                         })
@@ -184,8 +229,8 @@ export const QuizPage: React.FC = () => {
             } catch (err) {
                 console.warn('Failed to start session logging (completed stage)', err);
             }
-            // After quiz completion, trigger Razorpay payment for the report
-            startRazorpayPayment();
+            // After quiz completion, show payment summary screen
+            setAppStep('PAYMENT_SUMMARY');
         }
     };
 
@@ -395,6 +440,143 @@ export const QuizPage: React.FC = () => {
                         </div>
                     </div>
 
+                </div>
+            </div>
+        );
+    }
+
+    // PAYMENT SUMMARY SCREEN
+    if (appStep === 'PAYMENT_SUMMARY') {
+        const payable = getPayableAmount();
+        const discount = ORIGINAL_AMOUNT_PAISE - payable;
+        const hasDiscount = couponResult?.valid && discount > 0;
+
+        return (
+            <div className="min-h-screen font-sans" style={{ background: 'linear-gradient(170deg, #ffffff 0%, #fdf2f7 45%, #fce7f3 100%)' }}>
+                {/* Background blobs */}
+                <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
+                    <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full opacity-[0.15] blur-3xl" style={{ background: '#ED1164' }} />
+                    <div className="absolute -bottom-40 left-0 w-[400px] h-[400px] rounded-full opacity-[0.1] blur-3xl" style={{ background: '#7C3AED' }} />
+                </div>
+
+                <div className="relative z-10 max-w-lg mx-auto px-6 py-14">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-8">
+                        <img src="/appli-logo.svg" alt="Appli" className="h-10" style={{ mixBlendMode: 'darken' }} />
+                    </div>
+
+                    {/* Card */}
+                    <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-300/50 border border-slate-100 overflow-hidden">
+                        {/* Pink top strip */}
+                        <div className="h-1.5 bg-gradient-to-r from-[#ED1164] to-[#FF6B9D]" />
+
+                        <div className="p-8 md:p-10">
+                            {/* Heading */}
+                            <div className="text-center mb-8">
+                                <div className="inline-flex items-center gap-2 bg-pink-50 text-[#ED1164] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Assessment Complete
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">Payment Summary</h2>
+                                <p className="text-slate-500 text-sm">Unlock your personalised career report</p>
+                            </div>
+
+                            {/* Order Summary */}
+                            <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-100">
+                                <div className="flex justify-between items-center mb-3">
+                                    <span className="text-slate-700 font-medium text-sm">Pathfinder AI Report</span>
+                                    <span className="text-slate-700 font-semibold">₹{(ORIGINAL_AMOUNT_PAISE / 100).toFixed(0)}</span>
+                                </div>
+
+                                {hasDiscount && (
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="text-emerald-600 font-medium text-sm flex items-center gap-1.5">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>
+                                            Coupon ({couponResult?.code})
+                                        </span>
+                                        <span className="text-emerald-600 font-semibold">-₹{(discount / 100).toFixed(0)}</span>
+                                    </div>
+                                )}
+
+                                <div className="border-t border-slate-200 pt-3 mt-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-slate-900 font-bold">Total</span>
+                                        <div className="flex items-center gap-2">
+                                            {hasDiscount && (
+                                                <span className="text-slate-400 line-through text-sm">₹{(ORIGINAL_AMOUNT_PAISE / 100).toFixed(0)}</span>
+                                            )}
+                                            <span className="text-2xl font-extrabold text-[#ED1164]">₹{(payable / 100).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Coupon Input */}
+                            <div className="mb-6">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 block">Have a coupon?</label>
+                                {couponResult?.valid ? (
+                                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                                        <div className="flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            <span className="text-emerald-700 font-bold text-sm">{couponResult.code}</span>
+                                            <span className="text-emerald-600 text-xs">— {couponResult.message}</span>
+                                        </div>
+                                        <button
+                                            onClick={handleRemoveCoupon}
+                                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={couponCode}
+                                            onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponResult(null); }}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                                            placeholder="Enter coupon code"
+                                            className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold uppercase tracking-wider focus:outline-none focus:border-[#ED1164] focus:ring-2 focus:ring-pink-100 transition-all placeholder:normal-case placeholder:tracking-normal placeholder:font-normal"
+                                        />
+                                        <button
+                                            onClick={handleApplyCoupon}
+                                            disabled={couponLoading || !couponCode.trim()}
+                                            className="px-5 py-3 bg-slate-900 text-white font-bold text-sm rounded-xl hover:bg-slate-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                                        >
+                                            {couponLoading ? (
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : 'Apply'}
+                                        </button>
+                                    </div>
+                                )}
+                                {couponResult && !couponResult.valid && (
+                                    <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {couponResult.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Pay Button */}
+                            <button
+                                onClick={startRazorpayPayment}
+                                className="w-full bg-[#ED1164] hover:bg-[#C40E53] text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-pink-200 hover:-translate-y-0.5 flex items-center justify-center gap-3 text-lg group"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                <span>Pay ₹{(payable / 100).toFixed(0)} & Get Report</span>
+                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                            </button>
+
+                            {/* Trust signals */}
+                            <div className="flex items-center justify-center gap-4 mt-5 text-[10px] text-slate-400">
+                                <span className="flex items-center gap-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> Secure Payment</span>
+                                <span>•</span>
+                                <span>Powered by Razorpay</span>
+                                <span>•</span>
+                                <span>Instant Report</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
