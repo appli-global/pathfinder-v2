@@ -30,7 +30,7 @@ export const QuizPage: React.FC = () => {
             return;
         }
 
-        const amountInPaise = 100; // ₹499.00. //49900
+        const amountInPaise = 49900; // ₹499.00. //49900
 
         const options: any = {
             key,
