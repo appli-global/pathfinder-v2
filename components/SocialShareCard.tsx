@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnalysisResult } from '../types';
 
 interface SocialShareCardProps {
@@ -7,8 +7,12 @@ interface SocialShareCardProps {
   themeIndex?: number;
 }
 
+// Module-level cache so images are fetched only once across all instances
+const bgDataUriCache: Record<string, string> = {};
+
 export const SocialShareCard: React.FC<SocialShareCardProps> = ({ data, id = "social-share-card", themeIndex = 0 }) => {
   const { archetype, skillSignature } = data;
+  const [bgDataUris, setBgDataUris] = useState<Record<string, string>>({});
 
   // Clean text helper
   const clean = (text: string) => text.replace(/[*_`#]/g, '').trim();
@@ -39,6 +43,39 @@ export const SocialShareCard: React.FC<SocialShareCardProps> = ({ data, id = "so
 
   const currentTheme = themes[themeIndex] || themes[0];
 
+  // Pre-fetch background images as data URIs so html-to-image can capture them
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const uris: Record<string, string> = {};
+      for (const theme of themes) {
+        const src = theme.backgroundImage;
+        if (bgDataUriCache[src]) {
+          uris[src] = bgDataUriCache[src];
+          continue;
+        }
+        try {
+          const resp = await fetch(src);
+          const blob = await resp.blob();
+          const dataUri: string = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          bgDataUriCache[src] = dataUri;
+          uris[src] = dataUri;
+        } catch (e) {
+          console.warn('[SocialShareCard] Failed to preload bg', src, e);
+        }
+      }
+      if (!cancelled) setBgDataUris(uris);
+    })();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Use the data URI if available, otherwise fall back to the URL path
+  const resolvedBg = bgDataUris[currentTheme.backgroundImage] || currentTheme.backgroundImage;
+
   return (
     <div
       id={id}
@@ -47,7 +84,7 @@ export const SocialShareCard: React.FC<SocialShareCardProps> = ({ data, id = "so
         width: '400px',
         height: '711px',
         fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-        backgroundImage: `url(${currentTheme.backgroundImage})`,
+        backgroundImage: `url(${resolvedBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

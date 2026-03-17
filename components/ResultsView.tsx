@@ -169,25 +169,54 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
   };
 
   const handleShareResult = async () => {
+    const wrapper = document.getElementById('social-share-capture')?.parentElement;
     const element = document.getElementById('social-share-capture');
-    if (!element) return;
+    if (!element || !wrapper) return;
 
     try {
       setIsSharing(true);
-      // Wait for fonts and ensure the hidden element is fully rendered and styled
+      // Wait for fonts
       await document.fonts.ready;
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const dataUrl = await toPng(element, {
-        quality: 1,
-        pixelRatio: 2, // Use 2 for better compatibility and performance
-        cacheBust: true,
-        filter: (node) => {
-          // Skip external resources that might cause CORS issues
-          if (node.tagName === 'IFRAME') return false;
-          return true;
-        },
-      });
+      // Temporarily move the hidden wrapper on-screen so the browser fully
+      // renders it (off-screen elements at -9999px may not render pixe data).
+      // Keep it invisible to the user via opacity 0.
+      const origStyles = wrapper.style.cssText;
+      wrapper.style.cssText =
+        'position:fixed;left:0;top:0;z-index:-1;opacity:0;pointer-events:none;width:400px;height:711px;';
+
+      // Give the browser time to paint
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Retry toPng up to 3 times — html-to-image sometimes fails on the
+      // first attempt when lazy-loaded resources haven't resolved yet.
+      let dataUrl = '';
+      let lastErr: any;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          dataUrl = await toPng(element, {
+            quality: 1,
+            pixelRatio: 2,
+            cacheBust: true,
+            filter: (node: any) => {
+              if (node.tagName === 'IFRAME') return false;
+              return true;
+            },
+          });
+          break; // success
+        } catch (e) {
+          lastErr = e;
+          console.warn(`[share] toPng attempt ${attempt + 1} failed`, e);
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+
+      // Restore hidden position
+      wrapper.style.cssText = origStyles;
+
+      if (!dataUrl) {
+        throw lastErr || new Error('toPng returned empty');
+      }
 
       const res = await fetch(dataUrl);
       const blob = await res.blob();

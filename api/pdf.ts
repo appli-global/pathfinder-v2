@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
-import { Readable } from 'stream';
 import { generateReportHtml } from '../lib/pdf-html-template.js';
 
 const uri = process.env.MONGODB_URI;
@@ -167,8 +166,7 @@ export default async function handler(req: any, res: any) {
     let reportBlobUrl: string | null = null;
     try {
       const fileName = `reports/${sessionId}.pdf`;
-      const stream = Readable.from(pdfBuffer);
-      const blob = await put(fileName, stream, {
+      const blob = await put(fileName, pdfBuffer, {
         access: 'public',
         contentType: 'application/pdf',
       });

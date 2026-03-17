@@ -486,11 +486,9 @@ export default async function handler(req: any, res: any) {
     // We await this since Vercel functions terminate when response is sent.
     let finalBlobUrl: string | null = null;
     try {
-      const { Readable } = await import('stream');
       const { put } = await import('@vercel/blob');
       const blobName = `invoices/${invoiceNumber}.pdf`;
-      const stream = Readable.from(pdfBuffer);
-      const result = await put(blobName, stream as any, {
+      const result = await put(blobName, pdfBuffer, {
         access: 'public',
         contentType: 'application/pdf',
       } as any);
