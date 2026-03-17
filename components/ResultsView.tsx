@@ -198,6 +198,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
             quality: 1,
             pixelRatio: 2,
             cacheBust: true,
+            skipFonts: true,
             filter: (node: any) => {
               if (node.tagName === 'IFRAME') return false;
               return true;
