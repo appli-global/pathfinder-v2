@@ -142,11 +142,11 @@ export const SocialShareCard: React.FC<SocialShareCardProps> = ({ data, id = "so
         >
           CORE STRENGTHS
         </h4>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {coreStrengths.map((skill, idx) => (
-            <div key={idx} className="flex items-center gap-3">
-              <span className="text-white font-bold" style={{ fontSize: '20px', opacity: 0.8 }}>*</span>
-              <span className="text-white text-[24px] font-black tracking-tight leading-none">{clean(skill)}</span>
+            <div key={idx} className="flex items-start gap-4">
+              <span className="text-white font-bold mt-[6px]" style={{ fontSize: '20px', opacity: 0.8 }}>*</span>
+              <span className="text-white text-[24px] font-black tracking-tight leading-[1.15]">{clean(skill)}</span>
             </div>
           ))}
         </div>

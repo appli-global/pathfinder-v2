@@ -648,9 +648,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
 
   const CommunityInsightsSection = (
     <div className={`stats-grid bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 p-10 border border-slate-100 transition-all duration-700`}>
-      <div className="flex items-center gap-3 mb-8">
-        <span className="text-2xl">👥</span>
+      <div className="flex items-center justify-between gap-3 mb-8">
         <h3 className="text-2xl font-bold text-slate-900">Community Insights</h3>
+        <img src="/profile-stack.svg" alt="Profiles" className="h-10" />
       </div>
       <p className="text-slate-500 mb-10 border-l-2 border-pink-500 pl-4">{cleanText(displayData.communityStats.headline)}</p>
 

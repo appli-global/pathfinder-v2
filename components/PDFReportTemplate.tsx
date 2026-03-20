@@ -1,4 +1,5 @@
 import React from 'react';
+import { CommunityProfiles } from './CommunityProfiles';
 import { AnalysisResult } from '../types';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
@@ -413,7 +414,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
 
                                 {/* Content */}
                                 <div className="flex-1 pt-2">
-                                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{course.courseName}</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-2 leading-relaxed">{course.courseName}</h3>
                                     <p className="text-slate-600 leading-relaxed text-sm text-justify">{course.matchInsight}</p>
                                 </div>
 
@@ -486,7 +487,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
 
                                 <div className="text-center">
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{cleanText(alt.focus)}</div>
-                                    <h4 className="font-bold text-slate-900 mb-2 leading-tight h-10 overflow-hidden text-sm">{cleanText(alt.courseName)}</h4>
+                                    <h4 className="font-bold text-slate-900 mb-2 leading-relaxed text-sm flex items-center justify-center min-h-[44px]">{cleanText(alt.courseName)}</h4>
                                     <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-4">{cleanText(alt.insight)}</p>
                                 </div>
                             </div>
@@ -505,16 +506,9 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                             <h2 className="text-4xl font-extrabold text-[#1a1a2e] leading-tight">Community Insights</h2>
                         </div>
                         <div className="flex-shrink-0 ml-8">
-                            <img
-                                src="/community-avatars.png"
-                                alt="Community Members"
-                                className="h-16 w-auto object-contain"
-                                style={{
-                                    imageRendering: 'crisp-edges', // Try to keep it sharp
-                                    printColorAdjust: 'exact',
-                                    WebkitPrintColorAdjust: 'exact'
-                                }}
-                            />
+                            <div className="mt-2">
+                                <CommunityProfiles className="h-8" />
+                            </div>
                         </div>
                     </div>
                     <p className="text-slate-600 text-base mb-10 relative z-10">{cleanText(data.communityStats.headline)}</p>
