@@ -415,7 +415,7 @@ export function generateReportHtml(analysis: any): string {
         </p>
       </div>
       <div style="color:white;font-size:18px;font-weight:500;text-align:right;margin-top:16px;">
-        Steve Jobs
+        ${h(visionBoard.quoteAuthor || 'Inspiration')}
       </div>
     </div>
   </div>

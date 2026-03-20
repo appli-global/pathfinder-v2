@@ -448,8 +448,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
             </div>
 
             {/* Quote Box */}
-            <div className="bg-[#ED1164] rounded-2xl p-6 shadow-lg shadow-pink-200 flex items-center justify-center text-center">
-              <p className="text-lg font-serif italic text-white/90">"{cleanText(displayData.visionBoard.quote)}"</p>
+            <div className="bg-[#ED1164] rounded-2xl p-8 shadow-lg shadow-pink-200 flex flex-col justify-center text-center">
+              <p className="text-xl font-serif italic text-white/95 mb-4 leading-relaxed">"{cleanText(displayData.visionBoard.quote)}"</p>
+              {displayData.visionBoard.quoteAuthor && (
+                <p className="text-white/80 text-sm font-bold uppercase tracking-widest">— {displayData.visionBoard.quoteAuthor}</p>
+              )}
             </div>
           </div>
         </div>

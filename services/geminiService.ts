@@ -101,9 +101,10 @@ const FINAL_RESPONSE_SCHEMA: Schema = {
       properties: {
         futureSelf: { type: Type.STRING, description: "A vivid, inspiring paragraph describing a 'Day in the Life' of this person 5 years from now." },
         keyThemes: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-4 single words representing their future (e.g., 'Leadership', 'Design', 'Impact')." },
-        quote: { type: Type.STRING, description: "A famous or generated inspiring quote that fits their personality." }
+        quote: { type: Type.STRING, description: "An inspiring quote that fits their personality." },
+        quoteAuthor: { type: Type.STRING, description: "The author of the quote." }
       },
-      required: ["futureSelf", "keyThemes", "quote"]
+      required: ["futureSelf", "keyThemes", "quote", "quoteAuthor"]
     },
     skillSignature: {
       type: Type.ARRAY,
@@ -772,7 +773,8 @@ const getMockAnalysisResult = (level: '12' | 'UG', errorMessage?: string): Analy
     visionBoard: {
       futureSelf: "Five years from now, you are leading a product team or running your own venture. Your workspace is a blend of code and canvas—whiteboards filled with diagrams and screens running complex simulations. You are the bridge between raw engineering and human experience.",
       keyThemes: ["Builder", "Innovator", "Tech-Artist"],
-      quote: "The best way to predict the future is to invent it. – Alan Kay"
+      quote: "The best way to predict the future is to invent it.",
+      quoteAuthor: "Alan Kay"
     },
     skillSignature: [
       { subject: "Logic & Algo", A: 85, fullMark: 100 },

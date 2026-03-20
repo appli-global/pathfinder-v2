@@ -240,7 +240,7 @@ export const PDFReportTemplate: React.FC<PDFReportTemplateProps> = ({ data }) =>
                             </p>
                         </div>
                         <div className="text-white text-lg font-medium text-right mt-4">
-                            Steve Jobs
+                            {data.visionBoard.quoteAuthor || "Inspiration"}
                         </div>
                     </div>
                 </div>

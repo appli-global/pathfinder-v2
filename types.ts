@@ -47,6 +47,7 @@ export interface AnalysisResult {
     futureSelf: string; // A vivid description of their future professional life
     keyThemes: string[]; // 3-4 words like "Innovation", "Global", "Creation"
     quote: string; // An inspiring quote matching their archetype
+    quoteAuthor: string; // The person who said the quote
   };
   skillSignature: {
     subject: string; // e.g., "Creativity", "Logic", "Social"
