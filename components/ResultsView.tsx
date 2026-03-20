@@ -287,13 +287,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ data, onRestart }) => 
               <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight break-words hyphens-auto">{archetypeTitle}</h1>
               <button
                 onClick={handleOpenShareModal}
-                className="group flex flex-shrink-0 items-center justify-center gap-2 px-4 h-12 md:h-14 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-[#ED1164] hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100 transition-all duration-300"
+                className="group flex flex-shrink-0 items-center justify-center gap-2 px-4 h-10 md:h-12 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-[#ED1164] hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100 transition-all duration-300 w-fit"
                 title="Share your archetype"
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6 transform group-hover:scale-110 animate-rotate transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-5 md:h-5 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" />
                 </svg>
-                <span className="text-sm font-bold uppercase tracking-wider">Share</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500 group-hover:text-[#ED1164]">Share</span>
               </button>
             </div>
             <p className="text-lg md:text-xl text-slate-600 max-w-3xl leading-relaxed font-light">
