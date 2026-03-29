@@ -33,6 +33,8 @@ export const QuizPage: React.FC = () => {
     } | null>(null);
     const ORIGINAL_AMOUNT_PAISE = 49900; // ₹499
 
+
+
     const activeQuestions = selectedLevel === '12' ? QUESTIONS_12TH : QUESTIONS_UG;
 
     const handleApplyCoupon = async () => {
@@ -67,7 +69,7 @@ export const QuizPage: React.FC = () => {
     };
 
     const startRazorpayPayment = () => {
-        const key = import.meta.env.VITE_RAZORPAY_KEY_ID;
+        const key = (import.meta as any).env.VITE_RAZORPAY_KEY_ID;
         if (!key) {
             alert('Payment configuration is missing. Please contact support.');
             return;
@@ -145,8 +147,39 @@ export const QuizPage: React.FC = () => {
                     console.error('[payment-client] Failed to attach payment info to quiz state', e);
                 }
 
-                navigate('/results?success=true');
-            },
+                    // Check if this was a pre-quiz payment
+                    if (appStep === 'PAYMENT_SUMMARY' && !sessionId) {
+                        const newId = createSessionId();
+                        const paymentInfo = {
+                            provider: 'razorpay',
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            timestamp: Date.now(),
+                            paid: true
+                        };
+                        localStorage.setItem('pathfinder_payment', JSON.stringify(paymentInfo));
+
+                        // Trigger invoice generation (with required fields)
+                        fetch('/api/invoice', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: newId,
+                                level: selectedLevel,
+                                payment: paymentInfo,
+                                billing: { name: '', phone: '' }, // API will enrich from Razorpay
+                                amount: amountInPaise,
+                                currency: 'INR',
+                            }),
+                        }).catch(err => console.warn('Invoice failed', err));
+
+                        handleStart(newId);
+                        return;
+                    }
+
+                    navigate('/results?success=true');
+                },
             prefill: {
                 name: answers[100] || '',
             },
@@ -160,13 +193,24 @@ export const QuizPage: React.FC = () => {
         rzp.open();
     };
 
-    const handleStart = () => {
-        const newSessionId = createSessionId();
+    const handleStart = (providedId?: string) => {
+        const newSessionId = providedId || createSessionId();
         setSessionId(newSessionId);
         setAppStep('QUIZ');
         setAnswers({});
         setError(null);
         setCurrentQuestionIndex(0);
+
+        // Initial session log
+        fetch('/api/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: newSessionId,
+                level: selectedLevel,
+                stage: 'started',
+            }),
+        }).catch(err => console.warn('Failed to log session start', err));
     };
 
     const handleAnswer = async (value: string) => {
@@ -229,8 +273,35 @@ export const QuizPage: React.FC = () => {
             } catch (err) {
                 console.warn('Failed to start session logging (completed stage)', err);
             }
-            // After quiz completion, show payment summary screen
-            setAppStep('PAYMENT_SUMMARY');
+            // After quiz completion, check if already paid via homepage
+            const existingPayment = localStorage.getItem('pathfinder_payment');
+            if (existingPayment) {
+                try {
+                    const paymentInfo = JSON.parse(existingPayment);
+                    const state = { ...payload, payment: paymentInfo };
+                    localStorage.setItem('pathfinder_quiz_state', JSON.stringify(state));
+                    
+                    // Trigger invoice generation
+                    fetch('/api/invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: finalSessionId,
+                            level: selectedLevel,
+                            payment: paymentInfo,
+                            amount: ORIGINAL_AMOUNT_PAISE,
+                            originalAmount: ORIGINAL_AMOUNT_PAISE,
+                            currency: 'INR',
+                        }),
+                    }).catch(err => console.warn('Invoice failed', err));
+                } catch (e) {
+                    console.error('Failed to process existing payment', e);
+                }
+                localStorage.removeItem('pathfinder_payment');
+                navigate('/results?success=true');
+            } else {
+                setAppStep('PAYMENT_SUMMARY');
+            }
         }
     };
 
@@ -245,6 +316,20 @@ export const QuizPage: React.FC = () => {
         setAppStep('QUIZ');
         setTransitionSection(null);
     };
+
+    React.useEffect(() => {
+        // Check for checkout parameter
+        const params = new URLSearchParams(window.location.search);
+        const isCheckout = params.get('checkout') === 'true';
+        
+        const payment = localStorage.getItem('pathfinder_payment');
+        
+        if (payment && appStep === 'WELCOME') {
+            handleStart();
+        } else if (isCheckout && appStep === 'WELCOME') {
+            setAppStep('PAYMENT_SUMMARY');
+        }
+    }, [appStep]);
 
     // WELCOME / INTRO SCREEN — Pathway Design
     if (appStep === 'WELCOME') {
@@ -475,7 +560,7 @@ export const QuizPage: React.FC = () => {
                             <div className="text-center mb-8">
                                 <div className="inline-flex items-center gap-2 bg-pink-50 text-[#ED1164] text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    Assessment Complete
+                                    {sessionId ? 'Assessment Complete' : 'Get Your Report'}
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">Payment Summary</h2>
                                 <p className="text-slate-500 text-sm">Unlock your personalised career report</p>
