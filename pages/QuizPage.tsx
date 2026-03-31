@@ -147,39 +147,39 @@ export const QuizPage: React.FC = () => {
                     console.error('[payment-client] Failed to attach payment info to quiz state', e);
                 }
 
-                    // Check if this was a pre-quiz payment
-                    if (appStep === 'PAYMENT_SUMMARY' && !sessionId) {
-                        const newId = createSessionId();
-                        const paymentInfo = {
-                            provider: 'razorpay',
-                            paymentId: response.razorpay_payment_id,
-                            orderId: response.razorpay_order_id,
-                            signature: response.razorpay_signature,
-                            timestamp: Date.now(),
-                            paid: true
-                        };
-                        localStorage.setItem('pathfinder_payment', JSON.stringify(paymentInfo));
+                // Check if this was a pre-quiz payment
+                if (appStep === 'PAYMENT_SUMMARY' && !sessionId) {
+                    const newId = createSessionId();
+                    const paymentInfo = {
+                        provider: 'razorpay',
+                        paymentId: response.razorpay_payment_id,
+                        orderId: response.razorpay_order_id,
+                        signature: response.razorpay_signature,
+                        timestamp: Date.now(),
+                        paid: true
+                    };
+                    localStorage.setItem('pathfinder_payment', JSON.stringify(paymentInfo));
 
-                        // Trigger invoice generation (with required fields)
-                        fetch('/api/invoice', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                sessionId: newId,
-                                level: selectedLevel,
-                                payment: paymentInfo,
-                                billing: { name: '', phone: '' }, // API will enrich from Razorpay
-                                amount: amountInPaise,
-                                currency: 'INR',
-                            }),
-                        }).catch(err => console.warn('Invoice failed', err));
+                    // Trigger invoice generation (with required fields)
+                    fetch('/api/invoice', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: newId,
+                            level: selectedLevel,
+                            payment: paymentInfo,
+                            billing: { name: '', phone: '' }, // API will enrich from Razorpay
+                            amount: amountInPaise,
+                            currency: 'INR',
+                        }),
+                    }).catch(err => console.warn('Invoice failed', err));
 
-                        handleStart(newId);
-                        return;
-                    }
+                    handleStart(newId);
+                    return;
+                }
 
-                    navigate('/results?success=true');
-                },
+                navigate('/results?success=true');
+            },
             prefill: {
                 name: answers[100] || '',
             },
@@ -280,7 +280,7 @@ export const QuizPage: React.FC = () => {
                     const paymentInfo = JSON.parse(existingPayment);
                     const state = { ...payload, payment: paymentInfo };
                     localStorage.setItem('pathfinder_quiz_state', JSON.stringify(state));
-                    
+
                     // Trigger invoice generation
                     fetch('/api/invoice', {
                         method: 'POST',
@@ -321,9 +321,9 @@ export const QuizPage: React.FC = () => {
         // Check for checkout parameter
         const params = new URLSearchParams(window.location.search);
         const isCheckout = params.get('checkout') === 'true';
-        
+
         const payment = localStorage.getItem('pathfinder_payment');
-        
+
         if (payment && appStep === 'WELCOME') {
             handleStart();
         } else if (isCheckout && appStep === 'WELCOME') {
@@ -569,7 +569,7 @@ export const QuizPage: React.FC = () => {
                             {/* Order Summary */}
                             <div className="bg-slate-50 rounded-2xl p-5 mb-6 border border-slate-100">
                                 <div className="flex justify-between items-center mb-3">
-                                    <span className="text-slate-700 font-medium text-sm">Pathfinder AI Report</span>
+                                    <span className="text-slate-700 font-medium text-sm">Pathfinder Career Fit Assessment</span>
                                     <span className="text-slate-700 font-semibold">₹{(ORIGINAL_AMOUNT_PAISE / 100).toFixed(0)}</span>
                                 </div>
 
